@@ -19,7 +19,7 @@ const Profile: React.FC = () => {
   const [preview, setPreview] = useState<string | null>(null);
   const baseUrl = import.meta.env.VITE_GOLANG_API_BASE_URL;
 
-  // URL gambar default jika user belum punya PhotoProfile
+  // URL default untuk profile jika user belum memiliki foto profil
   const defaultProfileImage = useMemo(() => `${baseUrl}/public/default/user.png`, [baseUrl]);
 
   useEffect(() => {
@@ -35,37 +35,43 @@ const Profile: React.FC = () => {
     }
   }, [user, form, baseUrl, defaultProfileImage]);
 
-  const handleFileChange = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+  // Tangani perubahan file (update foto profil)
+  const handleFileChange = useCallback(
+    async (event: React.ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files?.[0];
+      if (!file) return;
 
-    const objectUrl = URL.createObjectURL(file);
-    setPreview(objectUrl);
+      const objectUrl = URL.createObjectURL(file);
+      setPreview(objectUrl);
 
-    const formData = new FormData();
-    formData.append('photo_profile', file);
+      const formData = new FormData();
+      formData.append('photo_profile', file);
 
-    try {
-      await API.put('/profile', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
-      message.success('Foto profil berhasil diperbarui');
-      fetchProfile();
-    } catch (error: unknown) {
-      message.error((error as Error).message || 'Gagal update foto profil');
-    }
-  }, [fetchProfile]);
+      try {
+        await API.put('/profile', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+        message.success('Foto profil berhasil diperbarui');
+        fetchProfile();
+      } catch (error: unknown) {
+        message.error((error as Error).message || 'Gagal update foto profil');
+      }
+    },
+    [fetchProfile]
+  );
 
+  // Tangani submit form untuk update profile
   const onFinish = async (values: UserProfile) => {
     const formData = new FormData();
-    formData.append('Fullname', values.Fullname || '');
-    formData.append('Username', values.Username || '');
-    formData.append('Email', values.Email || '');
+    // Gunakan key sesuai dengan yang diharapkan backend
+    formData.append('fullname', values.Fullname || '');
+    formData.append('username', values.Username || '');
+    formData.append('email', values.Email || '');
     if (values.JenisKelamin) {
-      formData.append('JenisKelamin', values.JenisKelamin);
+      formData.append('jenis_kelamin', values.JenisKelamin);
     }
     if (values.TanggalLahir) {
-      formData.append('TanggalLahir', moment(values.TanggalLahir).format('YYYY-MM-DD'));
+      formData.append('tanggal_lahir', moment(values.TanggalLahir).format('YYYY-MM-DD'));
     }
 
     try {
@@ -94,9 +100,7 @@ const Profile: React.FC = () => {
                 alt="Profile"
                 className="rounded-full w-32 h-32 object-cover cursor-pointer shadow-lg"
               />
-              <p className="text-lg mt-2 text-gray-600">
-                Click avatar to change photo
-              </p>
+              <p className="text-lg mt-2 text-gray-600">Click avatar to change photo</p>
             </label>
             <input
               id="fileUpload"
