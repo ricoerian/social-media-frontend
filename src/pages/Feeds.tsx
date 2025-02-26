@@ -268,11 +268,18 @@ const Feeds: React.FC = () => {
               <div className="bg-white border border-gray-200 rounded-lg shadow-sm w-full md:w-3/4 lg:w-2/3 mx-auto">
                 {/* Header */}
                 <div className="flex items-center p-4">
-                  <Avatar size={40} src={item.User ? item.User.PhotoProfile : undefined}>
-                    {item.User
-                      ? getInitials(item.User.Fullname || item.User.Username)
-                      : 'U'}
-                  </Avatar>
+                <Avatar
+                  size={40}
+                  src={
+                    item.User && item.User.PhotoProfile
+                      ? `${import.meta.env.VITE_GOLANG_API_BASE_URL}/${item.User.PhotoProfile}`
+                      : undefined
+                  }
+                >
+                  {item.User
+                    ? getInitials(item.User.Fullname || item.User.Username)
+                    : 'U'}
+                </Avatar>
                   <div className="ml-4">
                     <p className="font-semibold text-sm">
                       {item.User ? item.User.Username : 'Unknown'}
@@ -353,7 +360,7 @@ const Feeds: React.FC = () => {
                             <Avatar
                               size={30}
                               src={
-                                commentUser.PhotoProfile
+                                commentUser && commentUser.PhotoProfile
                                   ? `${import.meta.env.VITE_GOLANG_API_BASE_URL}/${commentUser.PhotoProfile}`
                                   : undefined
                               }
