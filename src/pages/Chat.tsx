@@ -334,19 +334,6 @@ const Chat: React.FC = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Menggunakan ReturnType<typeof setInterval> sebagai tipe pollingInterval
-  useEffect(() => {
-    let pollingInterval: ReturnType<typeof setInterval>;
-    if (selectedChatroom) {
-      pollingInterval = setInterval(() => {
-        fetchMessages(selectedChatroom.ID);
-      }, 1000);
-    }
-    return () => {
-      if (pollingInterval) clearInterval(pollingInterval);
-    };
-  }, [selectedChatroom]);
-
   // --- Event Handlers ---
   const handleSelectChatroom = (chatroom: IChatroom): void => {
     setSelectedChatroom(chatroom);

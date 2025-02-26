@@ -89,17 +89,8 @@ const Feeds: React.FC = () => {
     }
   };
 
-  // Fetch feeds saat komponen di-mount
   useEffect(() => {
     fetchFeeds();
-  }, []);
-
-  // Polling: ambil feeds terbaru setiap 5 detik
-  useEffect(() => {
-    const interval = setInterval(() => {
-      fetchFeeds();
-    }, 2000); // 5000 ms = 5 detik
-    return () => clearInterval(interval);
   }, []);
 
   const handleCreateFeed = async (values: CreateFeedFormValues): Promise<void> => {
