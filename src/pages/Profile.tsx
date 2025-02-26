@@ -64,14 +64,14 @@ const Profile: React.FC = () => {
   const onFinish = async (values: UserProfile) => {
     const formData = new FormData();
     // Gunakan key sesuai dengan yang diharapkan backend
-    formData.append('fullname', values.Fullname || '');
-    formData.append('username', values.Username || '');
-    formData.append('email', values.Email || '');
+    formData.append('Fullname', values.Fullname || '');
+    formData.append('Username', values.Username || '');
+    formData.append('Email', values.Email || '');
     if (values.JenisKelamin) {
-      formData.append('jenis_kelamin', values.JenisKelamin);
+      formData.append('Jeniskelamin', values.JenisKelamin);
     }
     if (values.TanggalLahir) {
-      formData.append('tanggal_lahir', moment(values.TanggalLahir).format('YYYY-MM-DD'));
+      formData.append('TanggalLahir', moment(values.TanggalLahir).format('YYYY-MM-DD'));
     }
 
     try {
