@@ -9,7 +9,7 @@ interface UserProfile {
   Username?: string;
   Email?: string;
   JenisKelamin?: string;
-  TanggalLahir?: string;
+  TanggalLahir?: moment.Moment;
   PhotoProfile?: string;
 }
 
@@ -19,23 +19,24 @@ const Profile: React.FC = () => {
   const [preview, setPreview] = useState<string | null>(null);
   const baseUrl = import.meta.env.VITE_GOLANG_API_BASE_URL;
 
-  // URL default untuk profile jika user belum memiliki foto profil
+  // Gambar default jika belum ada PhotoProfile
   const defaultProfileImage = useMemo(() => `${baseUrl}/public/default/user.png`, [baseUrl]);
 
   useEffect(() => {
     if (user) {
+      // Pastikan user.TanggalLahir adalah string tanggal yang valid (misalnya "2020-01-01")
       form.setFieldsValue({
         Fullname: user.Fullname || '',
         Username: user.Username || '',
         Email: user.Email || '',
         JenisKelamin: user.JenisKelamin || '',
-        TanggalLahir: user.TanggalLahir ? moment(user.TanggalLahir) : undefined,
+        // Jika TanggalLahir ada dan valid, ubah menjadi moment; jika tidak, set ke null
+        TanggalLahir: user.TanggalLahir ? moment(user.TanggalLahir) : null,
       });
       setPreview(user.PhotoProfile ? `${baseUrl}/${user.PhotoProfile}` : defaultProfileImage);
     }
   }, [user, form, baseUrl, defaultProfileImage]);
 
-  // Tangani perubahan file (update foto profil)
   const handleFileChange = useCallback(
     async (event: React.ChangeEvent<HTMLInputElement>) => {
       const file = event.target.files?.[0];
@@ -60,18 +61,21 @@ const Profile: React.FC = () => {
     [fetchProfile]
   );
 
-  // Tangani submit form untuk update profile
   const onFinish = async (values: UserProfile) => {
+    // Debug: cek nilai TanggalLahir
+    console.log('TanggalLahir dari form:', values.TanggalLahir);
+    
     const formData = new FormData();
-    // Gunakan key sesuai dengan yang diharapkan backend
-    formData.append('Fullname', values.Fullname || '');
-    formData.append('Username', values.Username || '');
-    formData.append('Email', values.Email || '');
+    // Gunakan key yang sesuai dengan backend
+    formData.append('fullname', values.Fullname || '');
+    formData.append('username', values.Username || '');
+    formData.append('email', values.Email || '');
     if (values.JenisKelamin) {
-      formData.append('Jeniskelamin', values.JenisKelamin);
+      formData.append('jenis_kelamin', values.JenisKelamin);
     }
     if (values.TanggalLahir) {
-      formData.append('TanggalLahir', moment(values.TanggalLahir).format('YYYY-MM-DD'));
+      // values.TanggalLahir seharusnya merupakan moment object
+      formData.append('tanggal_lahir', values.TanggalLahir.format('YYYY-MM-DD'));
     }
 
     try {
