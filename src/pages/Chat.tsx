@@ -276,6 +276,7 @@ export const DesktopView: React.FC<DesktopViewProps> = React.memo(({
 //
 // Komponen Chat Utama
 //
+// Komponen Chat Utama
 const Chat: React.FC = () => {
   const { user } = useAuth();
   const screens = useBreakpoint();
@@ -333,6 +334,18 @@ const Chat: React.FC = () => {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  useEffect(() => {
+    let pollingInterval: NodeJS.Timeout;
+    if (selectedChatroom) {
+      pollingInterval = setInterval(() => {
+        fetchMessages(selectedChatroom.ID);
+      }, 1000);
+    }
+    return () => {
+      if (pollingInterval) clearInterval(pollingInterval);
+    };
+  }, [selectedChatroom]);
 
   // --- Event Handlers ---
   const handleSelectChatroom = (chatroom: IChatroom): void => {
