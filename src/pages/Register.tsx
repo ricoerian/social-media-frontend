@@ -7,11 +7,11 @@ import moment from 'moment';
 const Register: React.FC = () => {
   const navigate = useNavigate();
 
-  const onFinish = async (values: { fullname: string; username: string; email: string; password: string; tanggal_lahir: moment.Moment }) => {
+  const onFinish = async (values: { Fullname: string; Username: string; Email: string; Password: string; JenisKelamin: string; TanggalLahir: moment.Moment }) => {
     // Konversi tanggal lahir dari moment ke string dengan format "YYYY-MM-DD"
     const payload = {
       ...values,
-      tanggal_lahir: values.tanggal_lahir ? values.tanggal_lahir.format("YYYY-MM-DD") : null,
+      TanggalLahir: values.TanggalLahir ? values.TanggalLahir.format("YYYY-MM-DD") : null,
     };
     try {
       await API.post('/register', payload);
@@ -34,37 +34,37 @@ const Register: React.FC = () => {
         <Form layout="vertical" onFinish={onFinish}>
           <Form.Item
             label="Fullname"
-            name="fullname"
-            rules={[{ required: true, message: 'Masukkan fullname!' }]}
+            name="Fullname"
+            rules={[{ required: true, message: 'Masukkan Fullname!' }]}
           >
-            <Input placeholder="Masukkan fullname" />
+            <Input placeholder="Masukkan Fullname" />
           </Form.Item>
           <Form.Item
             label="Username"
-            name="username"
-            rules={[{ required: true, message: 'Masukkan username!' }]}
+            name="Username"
+            rules={[{ required: true, message: 'Masukkan Username!' }]}
           >
-            <Input placeholder="Masukkan username" />
+            <Input placeholder="Masukkan Username" />
           </Form.Item>
           <Form.Item
             label="Email"
-            name="email"
+            name="Email"
             rules={[
-              { required: true, type: 'email', message: 'Masukkan email valid!' },
+              { required: true, type: 'email', message: 'Masukkan Email valid!' },
             ]}
           >
-            <Input placeholder="Masukkan email" />
+            <Input placeholder="Masukkan Email" />
           </Form.Item>
           <Form.Item
             label="Password"
-            name="password"
+            name="Password"
             rules={[{ required: true, min: 6, message: 'Password minimal 6 karakter!' }]}
           >
-            <Input.Password placeholder="Masukkan password" />
+            <Input.Password placeholder="Masukkan Password" />
           </Form.Item>
           <Form.Item
             label="Jenis Kelamin"
-            name="jenis_kelamin"
+            name="JenisKelamin"
             rules={[{ required: true, message: 'Pilih jenis kelamin!' }]}
           >
             <Select placeholder="Pilih jenis kelamin">
@@ -74,7 +74,7 @@ const Register: React.FC = () => {
           </Form.Item>
           <Form.Item
             label="Tanggal Lahir"
-            name="tanggal_lahir"
+            name="TanggalLahir"
             rules={[{ required: true, message: 'Masukkan tanggal lahir!' }]}
           >
             <DatePicker format="YYYY-MM-DD" style={{ width: '100%' }} />
