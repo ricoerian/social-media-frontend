@@ -143,7 +143,18 @@ const Feeds: React.FC = () => {
       return;
     }
     try {
-      await API.post(`/feeds/${feedId}/comments`, { comment });
+      // Pastikan user terdefinisi dan hanya kirim properti yang diperlukan
+      const userData = user
+        ? {
+            ID: user.ID,
+            Fullname: user.Fullname,
+            Username: user.Username,
+            Email: user.Email,
+            PhotoProfile: user.PhotoProfile,
+          }
+        : null;
+  
+      await API.post(`/feeds/${feedId}/comments`, { comment, user: userData });
       message.success('Komentar berhasil dikirim');
       setCommentValues((prev) => ({ ...prev, [feedId]: '' }));
       fetchFeeds();
@@ -152,6 +163,7 @@ const Feeds: React.FC = () => {
       message.error(err.response?.data?.error || 'Gagal mengirim komentar');
     }
   };
+  
 
   console.log(feeds);
 
