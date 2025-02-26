@@ -22,6 +22,7 @@ interface IUser {
   ID: number;
   Username: string;
   Fullname: string;
+  PhotoProfile?: string;
 }
 
 interface IChatroom {
@@ -39,6 +40,7 @@ interface IMessageItem {
     ID: number;
     Username: string;
     Fullname?: string;
+    PhotoProfile?: string;
   };
 }
 
@@ -99,8 +101,16 @@ export const MobileChat: React.FC<MobileChatProps> = React.memo(({
               className={`mb-4 flex items-end ${isOwnMessage ? 'justify-end' : 'justify-start'}`}
             >
               {!isOwnMessage && (
-                <Avatar className="mr-2" style={{ backgroundColor: '#87d068' }}>
-                  {getInitials(senderName)}
+                <Avatar
+                  className="mr-2"
+                  src={
+                    msg.User.PhotoProfile
+                      ? `${import.meta.env.VITE_GOLANG_API_BASE_URL}/${msg.User.PhotoProfile}`
+                      : undefined
+                  }
+                  style={{ backgroundColor: msg.User.PhotoProfile ? undefined : '#87d068' }}
+                >
+                  {!msg.User.PhotoProfile && getInitials(senderName)}
                 </Avatar>
               )}
               <div
@@ -114,8 +124,16 @@ export const MobileChat: React.FC<MobileChatProps> = React.memo(({
                 </div>
               </div>
               {isOwnMessage && (
-                <Avatar className="ml-2" style={{ backgroundColor: '#1890ff' }}>
-                  {getInitials(senderName)}
+                <Avatar
+                  className="ml-2"
+                  src={
+                    msg.User.PhotoProfile
+                      ? `${import.meta.env.VITE_GOLANG_API_BASE_URL}/${msg.User.PhotoProfile}`
+                      : undefined
+                  }
+                  style={{ backgroundColor: msg.User.PhotoProfile ? undefined : '#1890ff' }}
+                >
+                  {!msg.User.PhotoProfile && getInitials(senderName)}
                 </Avatar>
               )}
             </div>
@@ -224,8 +242,16 @@ export const DesktopView: React.FC<DesktopViewProps> = React.memo(({
                   className={`mb-4 flex items-end ${isOwnMessage ? 'justify-end' : 'justify-start'}`}
                 >
                   {!isOwnMessage && (
-                    <Avatar className="mr-2" style={{ backgroundColor: '#87d068' }}>
-                      {getInitials(senderName)}
+                    <Avatar
+                      className="mr-2"
+                      src={
+                        msg.User.PhotoProfile
+                          ? `${import.meta.env.VITE_GOLANG_API_BASE_URL}/${msg.User.PhotoProfile}`
+                          : undefined
+                      }
+                      style={{ backgroundColor: msg.User.PhotoProfile ? undefined : '#87d068' }}
+                    >
+                      {!msg.User.PhotoProfile && getInitials(senderName)}
                     </Avatar>
                   )}
                   <div
@@ -239,8 +265,16 @@ export const DesktopView: React.FC<DesktopViewProps> = React.memo(({
                     </div>
                   </div>
                   {isOwnMessage && (
-                    <Avatar className="ml-2" style={{ backgroundColor: '#1890ff' }}>
-                      {getInitials(senderName)}
+                    <Avatar
+                      className="ml-2"
+                      src={
+                        msg.User.PhotoProfile
+                          ? `${import.meta.env.VITE_GOLANG_API_BASE_URL}/${msg.User.PhotoProfile}`
+                          : undefined
+                      }
+                      style={{ backgroundColor: msg.User.PhotoProfile ? undefined : '#1890ff' }}
+                    >
+                      {!msg.User.PhotoProfile && getInitials(senderName)}
                     </Avatar>
                   )}
                 </div>
