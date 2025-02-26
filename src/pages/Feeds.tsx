@@ -153,6 +153,8 @@ const Feeds: React.FC = () => {
     }
   };
 
+  console.log(feeds);
+
   return (
     <div className="container mx-auto">
       {/* Floating Button untuk membuat feed */}
@@ -330,11 +332,9 @@ const Feeds: React.FC = () => {
                   {item.Comments && item.Comments.length > 0 && (
                     <div className="mt-4 border-t pt-4">
                       {item.Comments.map((comment) => {
-                        // Gunakan data comment.User jika ada, jika tidak pakai default
-                        const commentUser =
-                          comment.User && comment.User.Username && comment.User.Username.trim() !== ''
-                            ? comment.User
-                            : { Username: 'Unknown', PhotoProfile: '', Fullname: '' };
+                        const commentUser = comment.User && comment.User.Username.trim() !== ''
+                          ? comment.User
+                          : { Username: 'Unknown', PhotoProfile: '', Fullname: '' };
 
                         return (
                           <div key={comment.ID} className="flex items-start mt-2">
