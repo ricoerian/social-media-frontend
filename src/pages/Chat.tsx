@@ -276,7 +276,6 @@ export const DesktopView: React.FC<DesktopViewProps> = React.memo(({
 //
 // Komponen Chat Utama
 //
-// Komponen Chat Utama
 const Chat: React.FC = () => {
   const { user } = useAuth();
   const screens = useBreakpoint();
@@ -335,8 +334,9 @@ const Chat: React.FC = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  // Menggunakan ReturnType<typeof setInterval> sebagai tipe pollingInterval
   useEffect(() => {
-    let pollingInterval: NodeJS.Timeout;
+    let pollingInterval: ReturnType<typeof setInterval>;
     if (selectedChatroom) {
       pollingInterval = setInterval(() => {
         fetchMessages(selectedChatroom.ID);
