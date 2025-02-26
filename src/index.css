@@ -1,0 +1,23 @@
+@import "tailwindcss";
+
+.carousel-custom .slick-dots li button:before {
+  display: none !important;
+}
+
+.carousel-custom .slick-dots li button {
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 50% !important;
+  margin: 0 10px !important;
+  background-color: #c0c0c0 !important;
+  opacity: 1 !important;
+  padding: 0 !important;
+}
+
+.carousel-custom .slick-dots li.slick-active button {
+  background-color: #1890ff !important;
+}
+
+.carousel-custom .slick-dots {
+  bottom: -40px !important;
+}

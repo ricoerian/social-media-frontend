@@ -1,0 +1,382 @@
+import React, { useEffect, useState } from 'react';
+import {
+  List,
+  Button,
+  Modal,
+  message,
+  Form,
+  Input,
+  Upload,
+  UploadFile,
+  Avatar,
+  Image,
+  Carousel,
+} from 'antd';
+import {
+  PlusOutlined,
+  UploadOutlined,
+  HeartOutlined,
+  HeartFilled,
+} from '@ant-design/icons';
+import API from '../api';
+import { useAuth } from '../hooks/useAuth';
+
+interface FeedUser {
+  ID: number;
+  Fullname: string;
+  Username: string;
+  Email: string;
+  PhotoProfile: string;
+}
+
+interface CommentItem {
+  ID: number;
+  Comment: string;
+  FeedID: number;
+  User: FeedUser;
+  CreatedAt: string;
+}
+
+interface ReactionItem {
+  ID: number;
+  FeedID: number;
+  Reaction: string;
+  UserID: number;
+  User: FeedUser;
+  CreatedAt: string;
+}
+
+interface FeedItem {
+  ID: number;
+  Feed: string;
+  File: string;
+  UserID: number;
+  User?: FeedUser;
+  CreatedAt: string;
+  UpdatedAt: string;
+  DeletedAt: string | null;
+  Comments?: CommentItem[];
+  Reactions?: ReactionItem[];
+}
+
+interface CreateFeedFormValues {
+  feed: string;
+}
+
+// Helper untuk mendapatkan inisial nama
+const getInitials = (name: string): string => {
+  const words = name.split(' ');
+  if (words.length === 1) return words[0].charAt(0).toUpperCase();
+  return words.slice(0, 2).map((w) => w.charAt(0).toUpperCase()).join('');
+};
+
+const Feeds: React.FC = () => {
+  const { user } = useAuth();
+  const [feeds, setFeeds] = useState<FeedItem[]>([]);
+  const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
+  const [form] = Form.useForm<CreateFeedFormValues>();
+  const [fileList, setFileList] = useState<UploadFile[]>([]);
+  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
+  const [commentValues, setCommentValues] = useState<{ [key: number]: string }>({});
+
+  // Ambil feed dari backend
+  const fetchFeeds = async (): Promise<void> => {
+    try {
+      const res = await API.get('/feeds');
+      setFeeds(res.data.feeds);
+    } catch (error: unknown) {
+      console.error(error);
+    }
+  };
+
+  useEffect(() => {
+    fetchFeeds();
+  }, []);
+
+  const handleCreateFeed = async (values: CreateFeedFormValues): Promise<void> => {
+    try {
+      const formData = new FormData();
+      formData.append('feed', values.feed);
+      fileList.forEach((file) => {
+        if (file.originFileObj) {
+          formData.append('file', file.originFileObj);
+        }
+      });
+      await API.post('/feeds', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      message.success('Feed berhasil dibuat');
+      form.resetFields();
+      setFileList([]);
+      setPreviewUrls([]);
+      setIsModalVisible(false);
+      fetchFeeds();
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { error?: string } } };
+      message.error(err.response?.data?.error || 'Gagal membuat feed');
+    }
+  };
+
+  const handleLike = async (feedID: number): Promise<void> => {
+    try {
+      await API.post(`/feeds/${feedID}/like`);
+      message.success('Feed dilike');
+      fetchFeeds();
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { error?: string } } };
+      message.error(err.response?.data?.error || 'Gagal meng-like feed');
+    }
+  };
+
+  const handleFileChange = ({ fileList }: { fileList: UploadFile[] }) => {
+    setFileList(fileList);
+    const urls = fileList
+      .filter((file) => file.originFileObj)
+      .map((file) => file.originFileObj && URL.createObjectURL(file.originFileObj) as string);
+    setPreviewUrls(urls.filter((url): url is string => !!url));
+  };
+
+  const handleSubmitComment = async (feedId: number) => {
+    const comment = commentValues[feedId];
+    if (!comment || comment.trim() === '') {
+      message.error('Komentar tidak boleh kosong');
+      return;
+    }
+    try {
+      await API.post(`/feeds/${feedId}/comments`, { comment });
+      message.success('Komentar berhasil dikirim');
+      setCommentValues((prev) => ({ ...prev, [feedId]: '' }));
+      fetchFeeds();
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { error?: string } } };
+      message.error(err.response?.data?.error || 'Gagal mengirim komentar');
+    }
+  };
+
+  return (
+    <div className="container mx-auto">
+      {/* Floating Button untuk membuat feed */}
+      {user && (
+        <Button
+          type="primary"
+          shape="circle"
+          icon={<PlusOutlined />}
+          size="large"
+          className="!fixed bottom-16 right-4 z-50 shadow-lg"
+          onClick={() => setIsModalVisible(true)}
+        />
+      )}
+
+      {/* Modal Pembuatan Feed */}
+      <Modal
+        title="Buat Feed Baru"
+        visible={isModalVisible}
+        onCancel={() => {
+          setIsModalVisible(false);
+          setFileList([]);
+          setPreviewUrls([]);
+        }}
+        footer={null}
+        bodyStyle={{ maxHeight: '80vh', overflowY: 'auto' }}
+      >
+        <Form layout="vertical" form={form} onFinish={handleCreateFeed}>
+          <Form.Item
+            name="feed"
+            label="Isi Feed"
+            rules={[{ required: true, message: 'Isi feed tidak boleh kosong' }]}
+          >
+            <Input.TextArea rows={4} placeholder="Tulis feed anda di sini..." />
+          </Form.Item>
+          <Form.Item name="file" label="File (opsional)">
+            <Upload
+              multiple
+              beforeUpload={() => false}
+              fileList={fileList}
+              onChange={handleFileChange}
+              onRemove={(file) => {
+                const newFileList = fileList.filter((f) => f.uid !== file.uid);
+                setFileList(newFileList);
+                const newPreviewUrls = newFileList
+                  .filter((f) => f.originFileObj)
+                  .map((f) => f.originFileObj && URL.createObjectURL(f.originFileObj))
+                  .filter((url): url is string => !!url);
+                setPreviewUrls(newPreviewUrls);
+              }}
+            >
+              <Button icon={<UploadOutlined />}>Pilih File</Button>
+            </Upload>
+            {previewUrls.length > 0 && (
+              <div className="mt-4">
+                {previewUrls.length === 1 ? (
+                  <Image
+                    src={previewUrls[0]}
+                    alt="Preview"
+                    className="w-full object-cover rounded"
+                  />
+                ) : (
+                  <Carousel dotPosition="bottom" draggable adaptiveHeight>
+                    {previewUrls.map((url, index) => (
+                      <div key={index}>
+                        <Image
+                          src={url}
+                          alt={`Preview ${index}`}
+                          className="w-full object-cover"
+                          preview={false}
+                        />
+                      </div>
+                    ))}
+                  </Carousel>
+                )}
+              </div>
+            )}
+          </Form.Item>
+          <Form.Item>
+            <Button type="primary" htmlType="submit" block>
+              Post Feed
+            </Button>
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      {/* List Feed */}
+      <List
+        dataSource={feeds}
+        renderItem={(item: FeedItem) => {
+          const filePaths = item.File ? item.File.split(',').filter((path) => path) : [];
+          const isLiked =
+            user &&
+            item.Reactions?.some(
+              (reaction) => reaction.Reaction === 'like' && reaction.UserID === user.ID
+            );
+          const likeCount = item.Reactions ? item.Reactions.length : 0;
+          return (
+            <List.Item key={item.ID} className="mb-6">
+              <div className="bg-white border border-gray-200 rounded-lg shadow-sm w-full md:w-3/4 lg:w-2/3 mx-auto">
+                {/* Header */}
+                <div className="flex items-center p-4">
+                  <Avatar size={40} src={item.User ? item.User.PhotoProfile : undefined}>
+                    {item.User
+                      ? getInitials(item.User.Fullname || item.User.Username)
+                      : 'U'}
+                  </Avatar>
+                  <div className="ml-4">
+                    <p className="font-semibold text-sm">
+                      {item.User ? item.User.Username : 'Unknown'}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {new Date(item.CreatedAt).toLocaleString()}
+                    </p>
+                  </div>
+                </div>
+                {/* Konten Post */}
+                {filePaths.length > 0 && (
+                  <div className="w-full">
+                    {filePaths.length === 1 ? (
+                      <Image
+                        src={`${import.meta.env.VITE_GOLANG_API_BASE_URL}/${filePaths[0]}`}
+                        alt="Post image"
+                        className="w-full object-cover"
+                        preview
+                      />
+                    ) : (
+                      <Carousel dotPosition="bottom" draggable adaptiveHeight>
+                        {filePaths.map((filePath, idx) => (
+                          <div key={idx}>
+                            <Image
+                              src={`${import.meta.env.VITE_GOLANG_API_BASE_URL}/${filePath}`}
+                              alt={`Post image ${idx + 1}`}
+                              className="w-full object-cover"
+                              preview={false}
+                            />
+                          </div>
+                        ))}
+                      </Carousel>
+                    )}
+                  </div>
+                )}
+                {/* Footer/Aksi */}
+                <div className="p-4">
+                  <p className="text-sm mb-2">{item.Feed}</p>
+                  <div className="flex items-center space-x-4">
+                    <Button type="text" onClick={() => handleLike(item.ID)}>
+                      {isLiked ? (
+                        <HeartFilled className="text-red-500" />
+                      ) : (
+                        <HeartOutlined />
+                      )}
+                      <span className="ml-1 text-sm">{likeCount}</span>
+                    </Button>
+                  </div>
+                  {/* Form Komentar */}
+                  {user && (
+                    <div className="flex flex-col sm:flex-row gap-2 mt-4">
+                      <Input
+                        placeholder="Tulis komentar..."
+                        value={commentValues[item.ID] || ''}
+                        onChange={(e) =>
+                          setCommentValues((prev) => ({
+                            ...prev,
+                            [item.ID]: e.target.value,
+                          }))
+                        }
+                        onPressEnter={() => handleSubmitComment(item.ID)}
+                      />
+                      <Button type="primary" onClick={() => handleSubmitComment(item.ID)}>
+                        Kirim Komentar
+                      </Button>
+                    </div>
+                  )}
+                  {/* Tampilkan Komentar jika ada */}
+                  {item.Comments && item.Comments.length > 0 && (
+                    <div className="mt-4 border-t pt-4">
+                      {item.Comments.map((comment) => {
+                        const commentUser =
+                          comment.User &&
+                          comment.User.Username &&
+                          comment.User.Username.trim() !== ''
+                            ? comment.User
+                            : item.User;
+                        return (
+                          <div key={comment.ID} className="flex items-start mt-2">
+                            <Avatar
+                              size={30}
+                              src={
+                                commentUser && commentUser.PhotoProfile
+                                  ? `${import.meta.env.VITE_GOLANG_API_BASE_URL}/${commentUser.PhotoProfile}`
+                                  : undefined
+                              }
+                            >
+                              {commentUser &&
+                              (commentUser.Fullname || commentUser.Username)
+                                ? getInitials(commentUser.Fullname || commentUser.Username)
+                                : 'U'}
+                            </Avatar>
+                            <div className="ml-2">
+                              <p className="text-sm font-semibold">
+                                {commentUser &&
+                                commentUser.Username &&
+                                commentUser.Username.trim() !== ''
+                                  ? commentUser.Username
+                                  : 'Unknown'}
+                                <span className="text-xs text-gray-500 ml-2">
+                                  {new Date(comment.CreatedAt).toLocaleString()}
+                                </span>
+                              </p>
+                              <p className="text-sm">{comment.Comment}</p>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </List.Item>
+          );
+        }}
+      />
+    </div>
+  );
+};
+
+export default Feeds;
