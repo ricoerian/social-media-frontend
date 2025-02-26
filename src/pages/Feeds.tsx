@@ -330,34 +330,27 @@ const Feeds: React.FC = () => {
                   {item.Comments && item.Comments.length > 0 && (
                     <div className="mt-4 border-t pt-4">
                       {item.Comments.map((comment) => {
+                        // Gunakan data comment.User jika ada, jika tidak pakai default
                         const commentUser =
-                          comment.User &&
-                          comment.User.Username &&
-                          comment.User.Username.trim() !== ''
+                          comment.User && comment.User.Username && comment.User.Username.trim() !== ''
                             ? comment.User
-                            : item.User;
+                            : { Username: 'Unknown', PhotoProfile: '', Fullname: '' };
+
                         return (
                           <div key={comment.ID} className="flex items-start mt-2">
                             <Avatar
                               size={30}
                               src={
-                                commentUser && commentUser.PhotoProfile
+                                commentUser.PhotoProfile
                                   ? `${import.meta.env.VITE_GOLANG_API_BASE_URL}/${commentUser.PhotoProfile}`
                                   : undefined
                               }
                             >
-                              {commentUser &&
-                              (commentUser.Fullname || commentUser.Username)
-                                ? getInitials(commentUser.Fullname || commentUser.Username)
-                                : 'U'}
+                              {getInitials(commentUser.Fullname || commentUser.Username)}
                             </Avatar>
                             <div className="ml-2">
                               <p className="text-sm font-semibold">
-                                {commentUser &&
-                                commentUser.Username &&
-                                commentUser.Username.trim() !== ''
-                                  ? commentUser.Username
-                                  : 'Unknown'}
+                                {commentUser.Username || 'Unknown'}
                                 <span className="text-xs text-gray-500 ml-2">
                                   {new Date(comment.CreatedAt).toLocaleString()}
                                 </span>
