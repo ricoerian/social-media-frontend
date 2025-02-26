@@ -64,14 +64,14 @@ const Profile: React.FC = () => {
   const onFinish = async (values: ProfileFormValues) => {
     const formData = new FormData();
     // Gunakan key yang sesuai dengan backend
-    formData.append('Fullname', values.Fullname || '');
-    formData.append('Username', values.Username || '');
-    formData.append('Email', values.Email || '');
+    formData.append('fullname', values.Fullname || '');
+    formData.append('username', values.Username || '');
+    formData.append('email', values.Email || '');
     if (values.JenisKelamin) {
-      formData.append('JenisKelamin', values.JenisKelamin);
+      formData.append('jenis_kelamin', values.JenisKelamin);
     }
     if (values.TanggalLahir) {
-      formData.append('TanggalLahir', values.TanggalLahir.format('YYYY-MM-DD'));
+      formData.append('tanggal_lahir', values.TanggalLahir.format('YYYY-MM-DD'));
     }
 
     try {
@@ -112,32 +112,32 @@ const Profile: React.FC = () => {
           </div>
           <Form.Item
             label="Fullname"
-            name="Fullname"
+            name="fullname"
             rules={[{ required: true, message: 'Masukkan fullname!' }]}
           >
             <Input placeholder="Masukkan fullname" />
           </Form.Item>
           <Form.Item
             label="Username"
-            name="Username"
+            name="username"
             rules={[{ required: true, message: 'Masukkan username!' }]}
           >
             <Input placeholder="Masukkan username" />
           </Form.Item>
           <Form.Item
             label="Email"
-            name="Email"
+            name="email"
             rules={[{ required: true, type: 'email', message: 'Masukkan email valid!' }]}
           >
             <Input placeholder="Masukkan email" />
           </Form.Item>
-          <Form.Item label="Jenis Kelamin" name="JenisKelamin">
+          <Form.Item label="Jenis Kelamin" name="jenis_kelamin">
             <Select placeholder="Pilih jenis kelamin">
               <Select.Option value="Man">Man</Select.Option>
               <Select.Option value="Woman">Woman</Select.Option>
             </Select>
           </Form.Item>
-          <Form.Item label="Tanggal Lahir" name="TanggalLahir">
+          <Form.Item label="Tanggal Lahir" name="tanggal_lahir">
             <DatePicker format="YYYY-MM-DD" style={{ width: '100%' }} />
           </Form.Item>
           <Form.Item>
