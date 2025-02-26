@@ -10,22 +10,19 @@ const Login: React.FC = () => {
     try {
       const res = await API.post('/login', values);
       localStorage.setItem('token', res.data.token);
-      message.success('Login berhasil');
+      message.success('Login berhasil'); // Toast sukses
       navigate('/');
-    } catch (error: unknown) {
-      if (error instanceof Error && (error as { response?: { data?: { error?: string } } }).response) {
-        const errorMessage = (error as { response?: { data?: { error?: string } } }).response?.data?.error || 'Login gagal';
-        message.error(errorMessage);
-      } else {
-        message.error('Login gagal');
-      }
+    } catch (error: any) {
+      // Mengambil pesan error jika tersedia dari response API
+      const errorMessage = error?.response?.data?.error || 'Login gagal';
+      message.error(errorMessage); // Toast error
     }
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-r from-blue-100 to-purple-100 flex items-center justify-center px-4 rounded-2xl">
       <div className="bg-white p-8 rounded-2xl shadow-md w-full max-w-md">
-        <h2 className="text-3xl !font-bold mb-6 text-center text-blue-500">FeedsApp</h2>
+        <h2 className="text-3xl font-bold mb-6 text-center text-blue-500">FeedsApp</h2>
         <Form layout="vertical" onFinish={onFinish}>
           <Form.Item
             label="Email atau Username"
