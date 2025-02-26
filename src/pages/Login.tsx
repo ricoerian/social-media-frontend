@@ -23,9 +23,9 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-r from-blue-100 to-purple-100 flex items-center justify-center">
-      <div className="bg-white p-8 rounded shadow-md w-full max-w-md">
-        <h2 className="text-3xl font-bold mb-6 text-center text-blue-600">Login</h2>
+    <div className="min-h-screen bg-gradient-to-r from-blue-100 to-purple-100 flex items-center justify-center px-4 rounded-2xl">
+      <div className="bg-white p-8 rounded-2xl shadow-md w-full max-w-md">
+        <h2 className="text-3xl !font-bold mb-6 text-center text-blue-500">FeedsApp</h2>
         <Form layout="vertical" onFinish={onFinish}>
           <Form.Item
             label="Email atau Username"
