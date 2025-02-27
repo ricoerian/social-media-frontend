@@ -181,7 +181,7 @@ const Profile: React.FC = () => {
               <Button type="primary" htmlType="submit" block disabled={uploading} className="text-lg">
                 {uploading ? 'Updating Photo...' : 'Update Profile'}
               </Button>
-              <Button type="default" onClick={() => setIsPasswordModalOpen(true)} className="text-lg">
+              <Button type="default" onClick={() => setIsPasswordModalOpen(true)} className="text-lg w-full !bg-red-500">
                 Change Password
               </Button>
             </Form.Item>
@@ -212,7 +212,7 @@ const Profile: React.FC = () => {
                 <Input.Password placeholder="Masukkan password baru" />
               </Form.Item>
               <Form.Item>
-                <Button type="default" className='bg-red-500' htmlType="submit" block>
+                <Button type="default" className='!bg-red-500' htmlType="submit" block>
                   Change Password
                 </Button>
               </Form.Item>
