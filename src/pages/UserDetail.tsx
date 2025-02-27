@@ -128,7 +128,7 @@ const UserDetail: React.FC = () => {
     } else {
       return (
         <a href={fileUrl} download className="text-blue-500 underline">
-          Download File
+          {filePath.replace('public/uploads/', '')}
         </a>
       );
     }
