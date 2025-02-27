@@ -471,7 +471,7 @@ const Feeds: React.FC = () => {
                             : { ID: 0, Username: 'Unknown', PhotoProfile: '', Fullname: '' };
                         return (
                           <div key={comment.ID} className="flex flex-col mt-2">
-                            <div className="flex items-start">
+                            <div className="flex items-start flex-wrap">
                               <Avatar
                                 size={30}
                                 src={
