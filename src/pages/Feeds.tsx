@@ -8,8 +8,8 @@ import {
   Input,
   Upload,
   UploadFile,
-  Avatar,
   Carousel,
+  Avatar,
 } from 'antd';
 import {
   PlusOutlined,
@@ -386,27 +386,32 @@ const Feeds: React.FC = () => {
               (reaction) => reaction.Reaction === 'like' && reaction.UserID === user.ID
             );
           const likeCount = item.Reactions ? item.Reactions.length : 0;
+
+          // Komponen avatar feed, cek jika ada foto atau tidak
+          const FeedAvatar = item.User?.PhotoProfile ? (
+            // GANTI: <div> + <img> agar tidak terdistorsi
+            <div className="rounded-full w-10 h-10 overflow-hidden">
+              <img
+                src={`${import.meta.env.VITE_GOLANG_API_BASE_URL}/${item.User.PhotoProfile}`}
+                alt="avatar"
+                className="w-full h-full object-cover"
+              />
+            </div>
+          ) : (
+            <Avatar shape="circle" size={40}>
+              {item.User
+                ? getInitials(item.User.Fullname || item.User.Username)
+                : 'U'}
+            </Avatar>
+          );
+
           return (
             <List.Item key={item.ID} className="mb-6">
               <div className="bg-white border border-gray-200 rounded-lg shadow-sm w-full md:w-3/4 lg:w-2/3 mx-auto">
                 {/* Header */}
                 <div className="flex items-center p-4 justify-between">
                   <div className="flex items-center">
-                    <Avatar
-                      shape="circle"
-                      size={40}
-                      className='!object-cover'
-                      style={{ objectFit: 'cover' }}
-                      src={
-                        item.User && item.User.PhotoProfile
-                          ? `${import.meta.env.VITE_GOLANG_API_BASE_URL}/${item.User.PhotoProfile}`
-                          : undefined
-                      }
-                    >
-                      {item.User
-                        ? getInitials(item.User.Fullname || item.User.Username)
-                        : 'U'}
-                    </Avatar>
+                    {FeedAvatar /* GANTI: avatar feed */}
                     <div className="ml-4 overflow-hidden">
                       <p className="font-semibold text-sm break-all">
                         {item.User ? item.User.Fullname : 'Unknown'}
@@ -487,24 +492,27 @@ const Feeds: React.FC = () => {
                                 PhotoProfile: '',
                                 Fullname: '',
                               };
+
+                        // Komponen avatar komentar
+                        const CommentAvatar = commentUser.PhotoProfile ? (
+                          // GANTI: <div> + <img> agar tidak terdistorsi
+                          <div className="rounded-full w-8 h-8 overflow-hidden">
+                            <img
+                              src={`${import.meta.env.VITE_GOLANG_API_BASE_URL}/${commentUser.PhotoProfile}`}
+                              alt="avatar"
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        ) : (
+                          <Avatar shape="circle" size={30}>
+                            {getInitials(commentUser.Fullname || commentUser.Username)}
+                          </Avatar>
+                        );
+
                         return (
                           <div key={comment.ID} className="flex flex-col mt-2">
                             <div className="flex items-start">
-                              {/* PERUBAHAN: Style agar avatar komentar tidak gepeng */}
-                              <Avatar
-                                shape="circle"
-                                size={30}
-                                style={{ objectFit: 'cover' }} // PERUBAHAN
-                                src={
-                                  commentUser.PhotoProfile
-                                    ? `${import.meta.env.VITE_GOLANG_API_BASE_URL}/${commentUser.PhotoProfile}`
-                                    : undefined
-                                }
-                              >
-                                {getInitials(
-                                  commentUser.Fullname || commentUser.Username
-                                )}
-                              </Avatar>
+                              {CommentAvatar /* GANTI: avatar komentar */}
                               <div className="ml-2 overflow-hidden">
                                 <p className="text-sm font-semibold break-all">
                                   {commentUser.Fullname || 'Unknown'}{' '}

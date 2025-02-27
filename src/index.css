@@ -21,3 +21,9 @@
 .carousel-custom .slick-dots {
   bottom: -40px !important;
 }
+
+.ant-avatar > img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+}
