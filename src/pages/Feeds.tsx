@@ -16,6 +16,7 @@ import {
   UploadOutlined,
   HeartOutlined,
   HeartFilled,
+  CheckCircleTwoTone,
 } from '@ant-design/icons';
 import API from '../api';
 import { useAuth } from '../hooks/useAuth';
@@ -430,7 +431,10 @@ const Feeds: React.FC = () => {
                     {renderUserAvatar(item.User?.PhotoProfile, item.User?.Fullname, 40)}
                     <div className="break-all min-w-0">
                       <p className="font-semibold text-sm break-all">
-                        {item.User ? item.User.Fullname : 'Unknown'}
+                        {item.User ? item.User.Fullname : 'Unknown'}{' '}
+                        {item.User?.ID === 1 && (
+                          <CheckCircleTwoTone twoToneColor="#52c41a" style={{ marginLeft: 4 }} />
+                        )}
                       </p>
                       <p className="text-xs text-gray-500 break-all">
                         {new Date(item.CreatedAt).toLocaleString()}
@@ -499,107 +503,104 @@ const Feeds: React.FC = () => {
                   )}
                   {item.Comments && item.Comments.length > 0 && (
                     <div className="mt-4 border-t pt-4">
-                      {
-                        // Jika komentar lebih dari 5 dan belum diexpand, hanya tampilkan 5 komentar pertama
-                        (showAllComments[item.ID]
-                          ? item.Comments
-                          : item.Comments.slice(0, 5)
-                        ).map((comment) => {
-                          const commentUser =
-                            comment.User && comment.User.Username.trim() !== ''
-                              ? comment.User
-                              : {
-                                  ID: 0,
-                                  Username: 'Unknown',
-                                  PhotoProfile: '',
-                                  Fullname: '',
-                                };
+                      {(showAllComments[item.ID]
+                        ? item.Comments
+                        : item.Comments.slice(0, 5)
+                      ).map((comment) => {
+                        const commentUser =
+                          comment.User && comment.User.Username.trim() !== ''
+                            ? comment.User
+                            : {
+                                ID: 0,
+                                Username: 'Unknown',
+                                PhotoProfile: '',
+                                Fullname: '',
+                              };
 
-                          const isEditing = Object.prototype.hasOwnProperty.call(
-                            editingComments,
-                            comment.ID
-                          );
+                        const isEditing = Object.prototype.hasOwnProperty.call(
+                          editingComments,
+                          comment.ID
+                        );
 
-                          return (
-                            <div key={comment.ID} className="mt-2">
-                              <div className="flex items-start space-x-2">
-                                {renderUserAvatar(
-                                  commentUser.PhotoProfile,
-                                  commentUser.Fullname,
-                                  30
-                                )}
-                                <div className="break-all min-w-0 flex-1">
-                                  <p className="text-sm font-semibold break-all">
-                                    {commentUser.Fullname || 'Unknown'}{' '}
-                                    <span className="text-xs text-gray-500 ml-2">
-                                      {new Date(comment.CreatedAt).toLocaleString()}
-                                    </span>
-                                  </p>
-                                  {isEditing ? (
-                                    <div className="!w-full flex items-center gap-2">
-                                      <Input
-                                        value={editingComments[comment.ID]}
-                                        maxLength={1000}
-                                        onChange={(e) =>
-                                          setEditingComments((prev) => ({
-                                            ...prev,
-                                            [comment.ID]: e.target.value,
-                                          }))
-                                        }
-                                        className="break-all"
-                                      />
-                                      <Button onClick={() => handleUpdateComment(comment.ID)}>
-                                        Simpan
-                                      </Button>
-                                      <Button onClick={() => cancelEditComment(comment.ID)} danger>
-                                        Batal
-                                      </Button>
-                                    </div>
-                                  ) : (
-                                    <p className="text-sm break-all">
-                                      <TruncatedText
-                                        text={comment.Comment}
-                                        maxLength={100}
-                                      />
-                                    </p>
+                        return (
+                          <div key={comment.ID} className="mt-2">
+                            <div className="flex items-start space-x-2">
+                              {renderUserAvatar(
+                                commentUser.PhotoProfile,
+                                commentUser.Fullname,
+                                30
+                              )}
+                              <div className="break-all min-w-0 flex-1">
+                                <p className="text-sm font-semibold break-all">
+                                  {commentUser.Fullname || 'Unknown'}{' '}
+                                  {commentUser.ID === 1 && (
+                                    <CheckCircleTwoTone twoToneColor="#52c41a" style={{ marginLeft: 4 }} />
                                   )}
-                                </div>
-                                {user && commentUser.ID === user.ID && (
-                                  <div className="ml-2 flex-shrink-0">
-                                    {!isEditing && (
-                                      <Button type="link" onClick={() => startEditComment(comment)}>
-                                        Edit
-                                      </Button>
-                                    )}
-                                    <Button
-                                      type="link"
-                                      danger
-                                      onClick={() => handleDeleteComment(comment.ID)}
-                                    >
-                                      Hapus
+                                  <span className="text-xs text-gray-500 ml-2">
+                                    {new Date(comment.CreatedAt).toLocaleString()}
+                                  </span>
+                                </p>
+                                {isEditing ? (
+                                  <div className="!w-full flex items-center gap-2">
+                                    <Input
+                                      value={editingComments[comment.ID]}
+                                      maxLength={1000}
+                                      onChange={(e) =>
+                                        setEditingComments((prev) => ({
+                                          ...prev,
+                                          [comment.ID]: e.target.value,
+                                        }))
+                                      }
+                                      className="break-all"
+                                    />
+                                    <Button onClick={() => handleUpdateComment(comment.ID)}>
+                                      Simpan
+                                    </Button>
+                                    <Button onClick={() => cancelEditComment(comment.ID)} danger>
+                                      Batal
                                     </Button>
                                   </div>
+                                ) : (
+                                  <p className="text-sm break-all">
+                                    <TruncatedText
+                                      text={comment.Comment}
+                                      maxLength={100}
+                                    />
+                                  </p>
                                 )}
                               </div>
+                              {user && commentUser.ID === user.ID && (
+                                <div className="ml-2 flex-shrink-0">
+                                  {!isEditing && (
+                                    <Button type="link" onClick={() => startEditComment(comment)}>
+                                      Edit
+                                    </Button>
+                                  )}
+                                  <Button
+                                    type="link"
+                                    danger
+                                    onClick={() => handleDeleteComment(comment.ID)}
+                                  >
+                                    Hapus
+                                  </Button>
+                                </div>
+                              )}
                             </div>
-                          );
-                        })
-                      }
-                      {
-                        // Jika jumlah komentar lebih dari 5 dan belum diexpand, tampilkan tombol "Lihat semua komentar"
-                        item.Comments.length > 5 && !showAllComments[item.ID] && (
-                          <div className="mt-2">
-                            <Button
-                              type="link"
-                              onClick={() =>
-                                setShowAllComments((prev) => ({ ...prev, [item.ID]: true }))
-                              }
-                            >
-                              Lihat semua komentar
-                            </Button>
                           </div>
-                        )
-                      }
+                        );
+                      })}
+                      {item.Comments.length > 5 && !showAllComments[item.ID] && (
+                        <div className="mt-2">
+                          <Button
+                            type="link"
+                            onClick={() =>
+                              setShowAllComments((prev) => ({ ...prev, [item.ID]: true }))
+                            }
+                          >
+                            Lihat semua komentar
+                          </Button>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
