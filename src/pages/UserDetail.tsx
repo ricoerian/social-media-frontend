@@ -155,8 +155,8 @@ const UserDetail: React.FC = () => {
           </Avatar>
         </div>
         <div className="mt-4 md:mt-0 text-center md:text-left">
-          <h2 className="text-2xl font-bold">{userDetail.Fullname}</h2>
-          <p className="text-gray-500">@{userDetail.Username}</p>
+          <h2 className="text-2xl font-bold !break-all">{userDetail.Fullname}</h2>
+          <p className="text-gray-500 !break-all">@{userDetail.Username}</p>
           <div className="mt-2">
             {isFollowing ? (
               <Button type="primary" danger onClick={handleUnfollow}>
