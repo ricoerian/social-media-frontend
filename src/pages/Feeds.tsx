@@ -44,7 +44,7 @@ const TruncatedText: React.FC<{
       {expanded ? text : text.slice(0, maxLength) + '...'}{' '}
       <button
         onClick={() => setExpanded(!expanded)}
-        className="text-blue-500 hover:underline"
+        className="!text-blue-500 hover:underline !cursor-pointer"
       >
         {expanded ? 'Tampilkan lebih sedikit' : 'Lihat selengkapnya'}
       </button>
