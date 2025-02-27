@@ -70,6 +70,7 @@ const SearchUsers: React.FC = () => {
                   </Avatar>
                 }
                 title={user.Fullname}
+                className='!break-all'
                 description={`@${user.Username}`}
               />
             </List.Item>
