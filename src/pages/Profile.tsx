@@ -7,6 +7,7 @@ import {
   DatePicker,
   Avatar,
   message,
+  Modal,
 } from 'antd';
 import moment, { Moment } from 'moment';
 import API from '../api';
@@ -20,10 +21,17 @@ interface ProfileFormValues {
   tanggal_lahir?: Moment;
 }
 
+interface ChangePasswordFormValues {
+  old_password: string;
+  new_password: string;
+}
+
 const Profile: React.FC = () => {
   const { user, fetchProfile } = useAuth();
   const [form] = Form.useForm<ProfileFormValues>();
+  const [passwordForm] = Form.useForm<ChangePasswordFormValues>();
   const [uploading, setUploading] = useState<boolean>(false);
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState<boolean>(false);
   const [preview, setPreview] = useState<string>('');
   
   // Base URL dari variabel lingkungan Vite
@@ -99,6 +107,20 @@ const Profile: React.FC = () => {
     }
   };
 
+  const handleChangePassword = async (values: ChangePasswordFormValues) => {
+    try {
+      await API.put('/profile/password', values, {
+        headers: { 'Content-Type': 'application/json' },
+      });
+      message.success('Password berhasil diubah');
+      setIsPasswordModalOpen(false);
+      passwordForm.resetFields();
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { error?: string } } };
+      message.error(err.response?.data?.error || 'Gagal mengubah password');
+    }
+  };
+
   return (
     <div className="max-w-lg mx-auto mt-10 bg-white p-8 rounded-lg shadow-lg">
       <h2 className="text-3xl font-bold mb-6 text-center">Profile</h2>
@@ -159,8 +181,43 @@ const Profile: React.FC = () => {
               <Button type="primary" htmlType="submit" block disabled={uploading} className="text-lg">
                 {uploading ? 'Updating Photo...' : 'Update Profile'}
               </Button>
+              <Button type="default" onClick={() => setIsPasswordModalOpen(true)} className="text-lg">
+                Change Password
+              </Button>
             </Form.Item>
           </Form>
+          {/* Modal Change Password */}
+          <Modal
+            title="Change Password"
+            open={isPasswordModalOpen}
+            onCancel={() => setIsPasswordModalOpen(false)}
+            footer={null}
+          >
+            <Form layout="vertical" form={passwordForm} onFinish={handleChangePassword}>
+              <Form.Item
+                label="Old Password"
+                name="old_password"
+                rules={[{ required: true, message: 'Masukkan password lama!' }]}
+              >
+                <Input.Password placeholder="Masukkan password lama" />
+              </Form.Item>
+              <Form.Item
+                label="New Password"
+                name="new_password"
+                rules={[
+                  { required: true, message: 'Masukkan password baru!' },
+                  { min: 6, message: 'Password minimal 6 karakter!' },
+                ]}
+              >
+                <Input.Password placeholder="Masukkan password baru" />
+              </Form.Item>
+              <Form.Item>
+                <Button type="default" className='bg-red-500' htmlType="submit" block>
+                  Change Password
+                </Button>
+              </Form.Item>
+            </Form>
+          </Modal>
         </>
       ) : (
         <p className="text-center">Loading...</p>
