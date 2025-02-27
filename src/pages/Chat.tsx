@@ -11,7 +11,7 @@ import {
   Grid,
   Flex,
 } from 'antd';
-import { ArrowLeftOutlined, CheckCircleTwoTone } from '@ant-design/icons';
+import { ArrowLeftOutlined } from '@ant-design/icons';
 import API from '../api';
 import { useAuth } from '../hooks/useAuth';
 import axios from 'axios';
@@ -50,7 +50,6 @@ const getInitials = (name: string): string => {
   if (words.length === 1) return words[0].charAt(0).toUpperCase();
   return words.slice(0, 2).map((w) => w.charAt(0).toUpperCase()).join('');
 };
-
 const renderFilePreview = (file: File): React.ReactNode => {
   const url = URL.createObjectURL(file);
   const fileType = file.type;
@@ -64,7 +63,6 @@ const renderFilePreview = (file: File): React.ReactNode => {
     return <a href={url} download>{file.name}</a>;
   }
 };
-
 interface MobileChatProps {
   messages: IMessageItem[];
   newMessage: string;
@@ -118,22 +116,17 @@ export const MobileChat: React.FC<MobileChatProps> = React.memo(({
               <div key={msg.ID} className="mb-4">
                 <div className={`flex items-end ${isOwnMessage ? 'justify-end' : 'justify-start'}`}>
                   {!isOwnMessage && (
-                    <>
-                      <Avatar
-                        className="mr-2"
-                        src={
-                          msg.User.PhotoProfile
-                            ? `${import.meta.env.VITE_GOLANG_API_BASE_URL}/${msg.User.PhotoProfile}`
-                            : undefined
-                        }
-                        style={{ backgroundColor: msg.User.PhotoProfile ? undefined : '#87d068' }}
-                      >
-                        {!msg.User.PhotoProfile && getInitials(senderName)}
-                      </Avatar>
-                      {msg.User.ID === 1 && (
-                        <CheckCircleTwoTone style={{ marginRight: 4 }} />
-                      )}
-                    </>
+                    <Avatar
+                      className="mr-2"
+                      src={
+                        msg.User.PhotoProfile
+                          ? `${import.meta.env.VITE_GOLANG_API_BASE_URL}/${msg.User.PhotoProfile}`
+                          : undefined
+                      }
+                      style={{ backgroundColor: msg.User.PhotoProfile ? undefined : '#87d068' }}
+                    >
+                      {!msg.User.PhotoProfile && getInitials(senderName)}
+                    </Avatar>
                   )}
                   <div
                     className={`max-w-xs mx-2 px-3 py-2 rounded-lg ${
@@ -176,22 +169,17 @@ export const MobileChat: React.FC<MobileChatProps> = React.memo(({
                     </div>
                   </div>
                   {isOwnMessage && (
-                    <>
-                      <Avatar
-                        className="ml-2"
-                        src={
-                          msg.User.PhotoProfile
-                            ? `${import.meta.env.VITE_GOLANG_API_BASE_URL}/${msg.User.PhotoProfile}`
-                            : undefined
-                        }
-                        style={{ backgroundColor: msg.User.PhotoProfile ? undefined : '#1890ff' }}
-                      >
-                        {!msg.User.PhotoProfile && getInitials(senderName)}
-                      </Avatar>
-                      {msg.User.ID === 1 && (
-                        <CheckCircleTwoTone style={{ marginLeft: 4 }} />
-                      )}
-                    </>
+                    <Avatar
+                      className="ml-2"
+                      src={
+                        msg.User.PhotoProfile
+                          ? `${import.meta.env.VITE_GOLANG_API_BASE_URL}/${msg.User.PhotoProfile}`
+                          : undefined
+                      }
+                      style={{ backgroundColor: msg.User.PhotoProfile ? undefined : '#1890ff' }}
+                    >
+                      {!msg.User.PhotoProfile && getInitials(senderName)}
+                    </Avatar>
                   )}
                 </div>
               </div>
@@ -246,7 +234,6 @@ export const MobileChat: React.FC<MobileChatProps> = React.memo(({
     </div>
   );
 });
-
 interface DesktopViewProps {
   messages: IMessageItem[];
   newMessage: string;
@@ -345,22 +332,17 @@ export const DesktopView: React.FC<DesktopViewProps> = React.memo(({
                 <div key={msg.ID} className="mb-4">
                   <div className={`flex items-end ${isOwnMessage ? 'justify-end' : 'justify-start'}`}>
                     {!isOwnMessage && (
-                      <>
-                        <Avatar
-                          className="mr-2"
-                          src={
-                            msg.User.PhotoProfile
-                              ? `${import.meta.env.VITE_GOLANG_API_BASE_URL}/${msg.User.PhotoProfile}`
-                              : undefined
-                          }
-                          style={{ backgroundColor: msg.User.PhotoProfile ? undefined : '#87d068' }}
-                        >
-                          {!msg.User.PhotoProfile && getInitials(senderName)}
-                        </Avatar>
-                        {msg.User.ID === 1 && (
-                          <CheckCircleTwoTone style={{ marginRight: 4 }} />
-                        )}
-                      </>
+                      <Avatar
+                        className="mr-2"
+                        src={
+                          msg.User.PhotoProfile
+                            ? `${import.meta.env.VITE_GOLANG_API_BASE_URL}/${msg.User.PhotoProfile}`
+                            : undefined
+                        }
+                        style={{ backgroundColor: msg.User.PhotoProfile ? undefined : '#87d068' }}
+                      >
+                        {!msg.User.PhotoProfile && getInitials(senderName)}
+                      </Avatar>
                     )}
                     <div
                       className={`max-w-md mx-2 px-3 py-2 rounded-lg ${
@@ -403,22 +385,17 @@ export const DesktopView: React.FC<DesktopViewProps> = React.memo(({
                       </div>
                     </div>
                     {isOwnMessage && (
-                      <>
-                        <Avatar
-                          className="ml-2"
-                          src={
-                            msg.User.PhotoProfile
-                              ? `${import.meta.env.VITE_GOLANG_API_BASE_URL}/${msg.User.PhotoProfile}`
-                              : undefined
-                          }
-                          style={{ backgroundColor: msg.User.PhotoProfile ? undefined : '#1890ff' }}
-                        >
-                          {!msg.User.PhotoProfile && getInitials(senderName)}
-                        </Avatar>
-                        {msg.User.ID === 1 && (
-                          <CheckCircleTwoTone style={{ marginLeft: 4 }} />
-                        )}
-                      </>
+                      <Avatar
+                        className="ml-2"
+                        src={
+                          msg.User.PhotoProfile
+                            ? `${import.meta.env.VITE_GOLANG_API_BASE_URL}/${msg.User.PhotoProfile}`
+                            : undefined
+                        }
+                        style={{ backgroundColor: msg.User.PhotoProfile ? undefined : '#1890ff' }}
+                      >
+                        {!msg.User.PhotoProfile && getInitials(senderName)}
+                      </Avatar>
                     )}
                   </div>
                 </div>
@@ -473,7 +450,6 @@ export const DesktopView: React.FC<DesktopViewProps> = React.memo(({
     </div>
   );
 });
-
 const Chat: React.FC = () => {
   const { user } = useAuth();
   const screens = useBreakpoint();
@@ -488,7 +464,6 @@ const Chat: React.FC = () => {
   const [selectedUserIds, setSelectedUserIds] = useState<number[]>([]);
   const [chatroomName, setChatroomName] = useState<string>('');
   const messagesEndRef = useRef<HTMLDivElement>(null!);
-
   const fetchChatrooms = async (): Promise<void> => {
     try {
       const res = await API.get('/chatrooms');
@@ -525,7 +500,6 @@ const Chat: React.FC = () => {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
-
   const handleSelectChatroom = (chatroom: IChatroom): void => {
     setSelectedChatroom(chatroom);
     fetchMessages(chatroom.ID);
@@ -587,7 +561,6 @@ const Chat: React.FC = () => {
       message.error('Failed to delete chatroom');
     }
   };
-
   useEffect(() => {
     if (selectedUserIds.length === 1 && user) {
       const recipient = availableUsers.find((u) => u.ID === selectedUserIds[0]);
@@ -635,7 +608,6 @@ const Chat: React.FC = () => {
       }
     }
   };
-
   const MobileSidebar = () => (
     <div className="w-full overflow-y-auto p-4 bg-white rounded-2xl mb-10 shadow-lg">
       <h2 className="text-2xl font-bold text-gray-800 mb-4">Chatrooms</h2>
