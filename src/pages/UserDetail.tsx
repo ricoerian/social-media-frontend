@@ -143,7 +143,7 @@ const UserDetail: React.FC = () => {
     <div
       className={`max-w-2xl mx-auto p-4 ${
         userDetail.ID === 1
-          ? 'bg-gradient-to-r from-blue-100 to-purple-100 filter saturate-125 drop-shadow-xl'
+          ? 'bg-gradient-to-r from-blue-100 to-purple-100 filter saturate-125 drop-shadow-xl !rounded-2xl'
           : ''
       }`}
     >
