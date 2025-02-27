@@ -9,7 +9,6 @@ import {
   Upload,
   UploadFile,
   Avatar,
-  Image,
   Carousel,
 } from 'antd';
 import {
@@ -68,6 +67,42 @@ const getInitials = (name: string): string => {
   const words = name.split(' ');
   if (words.length === 1) return words[0].charAt(0).toUpperCase();
   return words.slice(0, 2).map((w) => w.charAt(0).toUpperCase()).join('');
+};
+
+// Fungsi helper untuk merender media berdasarkan ekstensi file
+const renderMedia = (filePath: string): React.ReactNode => {
+  const url = `${import.meta.env.VITE_GOLANG_API_BASE_URL}/${filePath}`;
+  const extension = filePath.split('.').pop()?.toLowerCase();
+  const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp'];
+  const videoExtensions = ['mp4', 'mov', 'avi', 'mkv'];
+  const audioExtensions = ['mp3', 'wav', 'ogg'];
+
+  if (!extension) {
+    return <a href={url} download className="text-blue-500 underline">Download File</a>;
+  }
+  if (imageExtensions.includes(extension)) {
+    return (
+      <img
+        src={url}
+        alt="Feed media"
+        className="w-full max-h-96 object-cover rounded mb-4"
+      />
+    );
+  } else if (videoExtensions.includes(extension)) {
+    return (
+      <video controls className="w-full max-h-96 object-cover rounded mb-4" src={url} />
+    );
+  } else if (audioExtensions.includes(extension)) {
+    return (
+      <audio controls className="w-full mb-4" src={url} />
+    );
+  } else {
+    return (
+      <a href={url} download className="text-blue-500 underline mb-4 block">
+        Download File
+      </a>
+    );
+  }
 };
 
 const Feeds: React.FC = () => {
@@ -132,8 +167,8 @@ const Feeds: React.FC = () => {
     setFileList(fileList);
     const urls = fileList
       .filter((file) => file.originFileObj)
-      .map((file) => file.originFileObj && URL.createObjectURL(file.originFileObj) as string);
-    setPreviewUrls(urls.filter((url): url is string => !!url));
+      .map((file) => URL.createObjectURL(file.originFileObj as Blob));
+    setPreviewUrls(urls);
   };
 
   const handleSubmitComment = async (feedId: number) => {
@@ -143,18 +178,7 @@ const Feeds: React.FC = () => {
       return;
     }
     try {
-      // Pastikan user terdefinisi dan hanya kirim properti yang diperlukan
-      const userData = user
-        ? {
-            ID: user.ID,
-            Fullname: user.Fullname,
-            Username: user.Username,
-            Email: user.Email,
-            PhotoProfile: user.PhotoProfile,
-          }
-        : null;
-  
-      await API.post(`/feeds/${feedId}/comments`, { comment, user: userData });
+      await API.post(`/feeds/${feedId}/comments`, { comment });
       message.success('Komentar berhasil dikirim');
       setCommentValues((prev) => ({ ...prev, [feedId]: '' }));
       fetchFeeds();
@@ -163,12 +187,9 @@ const Feeds: React.FC = () => {
       message.error(err.response?.data?.error || 'Gagal mengirim komentar');
     }
   };
-  
-
-  console.log(feeds);
 
   return (
-    <div className="container mx-auto">
+    <div className="container mx-auto p-6">
       {/* Floating Button untuk membuat feed */}
       {user && (
         <Button
@@ -176,7 +197,7 @@ const Feeds: React.FC = () => {
           shape="circle"
           icon={<PlusOutlined />}
           size="large"
-          className="!fixed bottom-16 right-4 md:bottom-4 z-50 shadow-lg"
+          className="fixed bottom-16 right-4 md:bottom-4 z-50 shadow-lg"
           onClick={() => setIsModalVisible(true)}
         />
       )}
@@ -212,8 +233,7 @@ const Feeds: React.FC = () => {
                 setFileList(newFileList);
                 const newPreviewUrls = newFileList
                   .filter((f) => f.originFileObj)
-                  .map((f) => f.originFileObj && URL.createObjectURL(f.originFileObj))
-                  .filter((url): url is string => !!url);
+                  .map((f) => URL.createObjectURL(f.originFileObj as Blob));
                 setPreviewUrls(newPreviewUrls);
               }}
             >
@@ -222,21 +242,12 @@ const Feeds: React.FC = () => {
             {previewUrls.length > 0 && (
               <div className="mt-4">
                 {previewUrls.length === 1 ? (
-                  <Image
-                    src={previewUrls[0]}
-                    alt="Preview"
-                    className="w-full object-cover rounded"
-                  />
+                  <div>{renderMedia(previewUrls[0].split('/').pop()!)}</div>
                 ) : (
                   <Carousel dotPosition="bottom" draggable adaptiveHeight>
                     {previewUrls.map((url, index) => (
                       <div key={index}>
-                        <Image
-                          src={url}
-                          alt={`Preview ${index}`}
-                          className="w-full object-cover"
-                          preview={false}
-                        />
+                        {renderMedia(url.split('/').pop()!)}
                       </div>
                     ))}
                   </Carousel>
@@ -268,18 +279,18 @@ const Feeds: React.FC = () => {
               <div className="bg-white border border-gray-200 rounded-lg shadow-sm w-full md:w-3/4 lg:w-2/3 mx-auto">
                 {/* Header */}
                 <div className="flex items-center p-4">
-                <Avatar
-                  size={40}
-                  src={
-                    item.User && item.User.PhotoProfile
-                      ? `${import.meta.env.VITE_GOLANG_API_BASE_URL}/${item.User.PhotoProfile}`
-                      : undefined
-                  }
-                >
-                  {item.User
-                    ? getInitials(item.User.Fullname || item.User.Username)
-                    : 'U'}
-                </Avatar>
+                  <Avatar
+                    size={40}
+                    src={
+                      item.User && item.User.PhotoProfile
+                        ? `${import.meta.env.VITE_GOLANG_API_BASE_URL}/${item.User.PhotoProfile}`
+                        : undefined
+                    }
+                  >
+                    {item.User
+                      ? getInitials(item.User.Fullname || item.User.Username)
+                      : 'U'}
+                  </Avatar>
                   <div className="ml-4">
                     <p className="font-semibold text-sm">
                       {item.User ? item.User.Username : 'Unknown'}
@@ -290,34 +301,26 @@ const Feeds: React.FC = () => {
                   </div>
                 </div>
                 {/* Konten Post */}
-                {filePaths.length > 0 && (
-                  <div className="w-full">
-                    {filePaths.length === 1 ? (
-                      <Image
-                        src={`${import.meta.env.VITE_GOLANG_API_BASE_URL}/${filePaths[0]}`}
-                        alt="Post image"
-                        className="w-full object-cover"
-                        preview
-                      />
-                    ) : (
-                      <Carousel dotPosition="bottom" draggable adaptiveHeight>
-                        {filePaths.map((filePath, idx) => (
-                          <div key={idx}>
-                            <Image
-                              src={`${import.meta.env.VITE_GOLANG_API_BASE_URL}/${filePath}`}
-                              alt={`Post image ${idx + 1}`}
-                              className="w-full object-cover"
-                              preview={false}
-                            />
-                          </div>
-                        ))}
-                      </Carousel>
-                    )}
-                  </div>
-                )}
+                <div className="p-4">
+                  <p className="text-gray-800 mb-4">{item.Feed}</p>
+                  {filePaths.length > 0 && (
+                    <div className="w-full">
+                      {filePaths.length === 1 ? (
+                        renderMedia(filePaths[0])
+                      ) : (
+                        <Carousel dotPosition="bottom" draggable adaptiveHeight>
+                          {filePaths.map((filePath, idx) => (
+                            <div key={idx}>
+                              {renderMedia(filePath)}
+                            </div>
+                          ))}
+                        </Carousel>
+                      )}
+                    </div>
+                  )}
+                </div>
                 {/* Footer/Aksi */}
                 <div className="p-4">
-                  <p className="text-sm mb-2">{item.Feed}</p>
                   <div className="flex items-center space-x-4">
                     <Button type="text" onClick={() => handleLike(item.ID)}>
                       {isLiked ? (
@@ -328,7 +331,7 @@ const Feeds: React.FC = () => {
                       <span className="ml-1 text-sm">{likeCount}</span>
                     </Button>
                   </div>
-                  {/* Form Komentar */}
+                  {/* Komentar */}
                   {user && (
                     <div className="flex flex-col sm:flex-row gap-2 mt-4">
                       <Input
@@ -347,7 +350,6 @@ const Feeds: React.FC = () => {
                       </Button>
                     </div>
                   )}
-                  {/* Tampilkan Komentar jika ada */}
                   {item.Comments && item.Comments.length > 0 && (
                     <div className="mt-4 border-t pt-4">
                       {item.Comments.map((comment) => {
