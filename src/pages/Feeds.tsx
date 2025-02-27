@@ -471,7 +471,7 @@ const Feeds: React.FC = () => {
                             : { ID: 0, Username: 'Unknown', PhotoProfile: '', Fullname: '' };
                         return (
                           <div key={comment.ID} className="flex flex-col mt-2">
-                            <div className="flex items-start flex-wrap">
+                            <div className="flex items-start">
                               <Avatar
                                 size={30}
                                 src={
@@ -482,7 +482,7 @@ const Feeds: React.FC = () => {
                               >
                                 {getInitials(commentUser.Fullname || commentUser.Username)}
                               </Avatar>
-                              <div className="ml-2 flex-1">
+                              <div className="ml-2 flex-1 flex-wrap">
                                 <p className="text-sm font-semibold">
                                   {commentUser.Fullname || 'Unknown'}{' '}
                                   <span className="text-xs text-gray-500 ml-2">
