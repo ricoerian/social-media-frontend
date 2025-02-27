@@ -131,7 +131,7 @@ export const MobileChat: React.FC<MobileChatProps> = React.memo(({
                         {!msg.User.PhotoProfile && getInitials(senderName)}
                       </Avatar>
                       {msg.User.ID === 1 && (
-                        <CheckCircleTwoTone twoToneColor="#52c41a" style={{ marginRight: 4 }} />
+                        <CheckCircleTwoTone style={{ marginRight: 4 }} />
                       )}
                     </>
                   )}
@@ -189,7 +189,7 @@ export const MobileChat: React.FC<MobileChatProps> = React.memo(({
                         {!msg.User.PhotoProfile && getInitials(senderName)}
                       </Avatar>
                       {msg.User.ID === 1 && (
-                        <CheckCircleTwoTone twoToneColor="#52c41a" style={{ marginLeft: 4 }} />
+                        <CheckCircleTwoTone style={{ marginLeft: 4 }} />
                       )}
                     </>
                   )}
@@ -358,7 +358,7 @@ export const DesktopView: React.FC<DesktopViewProps> = React.memo(({
                           {!msg.User.PhotoProfile && getInitials(senderName)}
                         </Avatar>
                         {msg.User.ID === 1 && (
-                          <CheckCircleTwoTone twoToneColor="#52c41a" style={{ marginRight: 4 }} />
+                          <CheckCircleTwoTone style={{ marginRight: 4 }} />
                         )}
                       </>
                     )}
@@ -416,7 +416,7 @@ export const DesktopView: React.FC<DesktopViewProps> = React.memo(({
                           {!msg.User.PhotoProfile && getInitials(senderName)}
                         </Avatar>
                         {msg.User.ID === 1 && (
-                          <CheckCircleTwoTone twoToneColor="#52c41a" style={{ marginLeft: 4 }} />
+                          <CheckCircleTwoTone style={{ marginLeft: 4 }} />
                         )}
                       </>
                     )}
