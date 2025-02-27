@@ -512,7 +512,7 @@ const Feeds: React.FC = () => {
                                     </Button>
                                   </div>
                                 ) : (
-                                  <p className="text-sm">{comment.Comment}</p>
+                                  <p className="text-sm flex-wrap">{comment.Comment}</p>
                                 )}
                               </div>
                               {/* Tombol edit & hapus komentar */}
