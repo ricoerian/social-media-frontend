@@ -154,7 +154,7 @@ const Profile: React.FC = () => {
               className="hidden"
               onChange={handleFileChange}
             />
-            <p className="mt-2 text-gray-600">Click avatar to change photo</p>
+            <p className="!mt-2 text-gray-600">Click avatar to change photo</p>
           </div>
           <Form layout="vertical" form={form} onFinish={onFinish}>
             <Form.Item
