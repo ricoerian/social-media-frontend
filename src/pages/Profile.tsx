@@ -160,14 +160,14 @@ const Profile: React.FC = () => {
             <Form.Item
               label="Fullname"
               name="fullname"
-              rules={[{ required: true, message: 'Masukkan fullname!' }]}
+              rules={[{ required: true, max: 100, message: 'Masukkan fullname!' }]}
             >
               <Input placeholder="Masukkan fullname" />
             </Form.Item>
             <Form.Item
               label="Username"
               name="username"
-              rules={[{ required: true, message: 'Masukkan username!' }]}
+              rules={[{ required: true, min: 5, max: 50, message: 'Masukkan username!' }]}
             >
               <Input placeholder="Masukkan username" />
             </Form.Item>
@@ -175,7 +175,7 @@ const Profile: React.FC = () => {
               label="Email"
               name="email"
               rules={[
-                { required: true, type: 'email', message: 'Masukkan email valid!' },
+                { required: true, max: 100, type: 'email', message: 'Masukkan email valid!' },
               ]}
             >
               <Input placeholder="Masukkan email" />

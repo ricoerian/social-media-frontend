@@ -206,6 +206,7 @@ export const MobileChat: React.FC<MobileChatProps> = React.memo(({
           <Input.TextArea
             rows={2}
             value={newMessage}
+            maxLength={1000}
             onChange={(e) => setNewMessage(e.target.value)}
             placeholder="Type your message..."
             className="w-full p-2 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-400"
@@ -764,6 +765,7 @@ const Chat: React.FC = () => {
               <Input
                 placeholder="Enter group chat name"
                 value={chatroomName}
+                max={200}
                 onChange={(e) => setChatroomName(e.target.value)}
               />
             )}
