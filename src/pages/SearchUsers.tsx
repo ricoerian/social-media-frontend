@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Input, List, Avatar } from 'antd';
 import { Link } from 'react-router-dom';
+import { CheckCircleTwoTone } from '@ant-design/icons';
 import API from '../api';
 
 interface IUser {
@@ -43,7 +44,7 @@ const SearchUsers: React.FC = () => {
 
   // Filter users: Tidak menampilkan user yang sedang login
   const filteredUsers = users
-    .filter(user => user.ID !== currentUserId) // Hapus user yang sedang login
+    .filter(user => user.ID !== currentUserId)
     .filter(user =>
       user.Fullname.toLowerCase().includes(searchQuery.toLowerCase()) ||
       user.Username.toLowerCase().includes(searchQuery.toLowerCase())
@@ -69,8 +70,14 @@ const SearchUsers: React.FC = () => {
                     {user.Fullname.charAt(0)}
                   </Avatar>
                 }
-                title={user.Fullname}
-                className='!break-all'
+                title={
+                  <span className="!break-all">
+                    {user.Fullname}
+                    {user.ID === 1 && (
+                      <CheckCircleTwoTone style={{ marginLeft: 4 }} />
+                    )}
+                  </span>
+                }
                 description={`@${user.Username}`}
               />
             </List.Item>
