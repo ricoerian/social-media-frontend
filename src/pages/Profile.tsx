@@ -33,6 +33,7 @@ const Profile: React.FC = () => {
   const [passwordForm] = Form.useForm<ChangePasswordFormValues>();
   const [uploading, setUploading] = useState<boolean>(false);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState<boolean>(false);
+  const [isDeactivateModalOpen, setIsDeactivateModalOpen] = useState<boolean>(false);
   const [preview, setPreview] = useState<string>('');
   
   // Base URL dari variabel lingkungan Vite
@@ -122,6 +123,19 @@ const Profile: React.FC = () => {
     }
   };
 
+  // Fungsi untuk menonaktifkan akun
+  const handleDeactivateAccount = async () => {
+    try {
+      await API.delete('/profile');
+      message.success('Akun berhasil dinonaktifkan');
+      // Setelah akun dinonaktifkan, Anda bisa melakukan logout atau redirect ke halaman login.
+      // Contoh: window.location.href = '/login';
+    } catch (error: unknown) {
+      message.error((error as Error).message || 'Gagal menonaktifkan akun');
+    }
+    setIsDeactivateModalOpen(false);
+  };
+
   return (
     <div className="max-w-lg mx-auto mt-10 bg-white p-8 rounded-lg shadow-lg">
       <h2 className="text-3xl font-bold mb-6 text-center">Profile</h2>
@@ -183,8 +197,19 @@ const Profile: React.FC = () => {
                 <Button type="primary" htmlType="submit" block disabled={uploading} className="text-lg">
                   {uploading ? 'Updating Photo...' : 'Update Profile'}
                 </Button>
-                <Button type="default" onClick={() => setIsPasswordModalOpen(true)} className="text-lg w-full !bg-red-500 !text-white hover:!text-white">
+                <Button
+                  type="default"
+                  onClick={() => setIsPasswordModalOpen(true)}
+                  className="text-lg w-full !bg-red-500 !text-white hover:!text-white"
+                >
                   Change Password
+                </Button>
+                <Button
+                  type="default"
+                  onClick={() => setIsDeactivateModalOpen(true)}
+                  className="text-lg w-full !bg-red-600 !text-white hover:!text-white"
+                >
+                  Deactivate Account
                 </Button>
               </Flex>
             </Form.Item>
@@ -220,6 +245,22 @@ const Profile: React.FC = () => {
                 </Button>
               </Form.Item>
             </Form>
+          </Modal>
+          {/* Modal Deactivate Account */}
+          <Modal
+            title="Deactivate Account"
+            open={isDeactivateModalOpen}
+            onCancel={() => setIsDeactivateModalOpen(false)}
+            footer={[
+              <Button key="cancel" onClick={() => setIsDeactivateModalOpen(false)}>
+                Cancel
+              </Button>,
+              <Button key="confirm" type="primary" danger onClick={handleDeactivateAccount}>
+                Deactivate
+              </Button>,
+            ]}
+          >
+            <p>Are you sure you want to deactivate your account? This action cannot be undone.</p>
           </Modal>
         </>
       ) : (
