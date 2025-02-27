@@ -311,25 +311,23 @@ const Feeds: React.FC = () => {
     }
   };
 
-  // Menu untuk dropdown feed
   const feedMenu = (feed: FeedItem) => (
     <Menu>
-      <Menu.Item key="edit" onClick={() => openEditFeedModal(feed)}>
+      <Menu.Item className='!bg-blue-500 !text-white' key="edit" onClick={() => openEditFeedModal(feed)}>
         Edit
       </Menu.Item>
-      <Menu.Item key="delete" onClick={() => handleDeleteFeed(feed.ID)}>
+      <Menu.Item className='!bg-red-500 !text-white' key="delete" onClick={() => handleDeleteFeed(feed.ID)}>
         Hapus
       </Menu.Item>
     </Menu>
   );
 
-  // Menu untuk dropdown comment
   const commentMenu = (comment: CommentItem) => (
     <Menu>
-      <Menu.Item key="edit" onClick={() => openEditCommentModal(comment)}>
+      <Menu.Item className='!bg-blue-500 !text-white' key="edit" onClick={() => openEditCommentModal(comment)}>
         Edit
       </Menu.Item>
-      <Menu.Item key="delete" onClick={() => handleDeleteComment(comment.ID)}>
+      <Menu.Item className='!bg-red-500 !text-white' key="delete" onClick={() => handleDeleteComment(comment.ID)}>
         Hapus
       </Menu.Item>
     </Menu>
