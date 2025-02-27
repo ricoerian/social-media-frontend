@@ -112,7 +112,7 @@ const UserDetail: React.FC = () => {
         <img
           src={fileUrl}
           alt="attachment"
-          className="object-cover rounded w-full max-h-80"
+          className="object-cover rounded w-full h-full"
         />
       );
     } else if (ext && videoExt.includes(ext)) {
@@ -120,7 +120,7 @@ const UserDetail: React.FC = () => {
         <video
           controls
           src={fileUrl}
-          className="object-cover rounded w-full max-h-80"
+          className="object-cover rounded w-full h-full"
         />
       );
     } else if (ext && audioExt.includes(ext)) {
