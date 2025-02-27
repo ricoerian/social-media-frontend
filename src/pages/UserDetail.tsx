@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { Avatar, Button, List, message, Grid, Carousel } from 'antd';
+import { Avatar, Button, List, message, Grid, Carousel, Spin } from 'antd';
 import API from '../api';
 
 interface IUser {
@@ -135,7 +135,11 @@ const UserDetail: React.FC = () => {
   };
 
   if (!userDetail) {
-    return <p>Loading...</p>;
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <Spin tip="Loading..." size="large" />
+      </div>
+    );
   }
 
   return (

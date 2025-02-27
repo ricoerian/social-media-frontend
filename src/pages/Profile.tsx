@@ -8,6 +8,7 @@ import {
   Avatar,
   message,
   Modal,
+  Spin,
   Flex,
 } from 'antd';
 import moment, { Moment } from 'moment';
@@ -35,7 +36,7 @@ const Profile: React.FC = () => {
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState<boolean>(false);
   const [isDeactivateModalOpen, setIsDeactivateModalOpen] = useState<boolean>(false);
   const [preview, setPreview] = useState<string>('');
-  
+
   // Base URL dari variabel lingkungan Vite
   const baseUrl = import.meta.env.VITE_GOLANG_API_BASE_URL;
   const defaultProfileImage = `${baseUrl}/public/default/user.png`;
@@ -144,11 +145,7 @@ const Profile: React.FC = () => {
           <div className="flex flex-col items-center mb-8">
             {/* Avatar sebagai tombol upload */}
             <label htmlFor="fileUpload" className="cursor-pointer">
-              <Avatar
-                size={100}
-                src={preview}
-                className="cursor-pointer"
-              />
+              <Avatar size={100} src={preview} className="cursor-pointer" />
             </label>
             <input
               id="fileUpload"
@@ -194,7 +191,13 @@ const Profile: React.FC = () => {
             </Form.Item>
             <Form.Item>
               <Flex vertical gap={10}>
-                <Button type="primary" htmlType="submit" block disabled={uploading} className="text-lg">
+                <Button
+                  type="primary"
+                  htmlType="submit"
+                  block
+                  disabled={uploading}
+                  className="text-lg"
+                >
                   {uploading ? 'Updating Photo...' : 'Update Profile'}
                 </Button>
                 <Button
@@ -240,7 +243,12 @@ const Profile: React.FC = () => {
                 <Input.Password placeholder="Masukkan password baru" />
               </Form.Item>
               <Form.Item>
-                <Button type="default" className='!bg-red-500 !text-white hover:!text-white' htmlType="submit" block>
+                <Button
+                  type="default"
+                  className="!bg-red-500 !text-white hover:!text-white"
+                  htmlType="submit"
+                  block
+                >
                   Change Password
                 </Button>
               </Form.Item>
@@ -255,16 +263,25 @@ const Profile: React.FC = () => {
               <Button key="cancel" onClick={() => setIsDeactivateModalOpen(false)}>
                 Cancel
               </Button>,
-              <Button key="confirm" type="primary" danger onClick={handleDeactivateAccount}>
+              <Button
+                key="confirm"
+                type="primary"
+                danger
+                onClick={handleDeactivateAccount}
+              >
                 Deactivate
               </Button>,
             ]}
           >
-            <p>Are you sure you want to deactivate your account? This action cannot be undone.</p>
+            <p>
+              Are you sure you want to deactivate your account? This action cannot be undone.
+            </p>
           </Modal>
         </>
       ) : (
-        <p className="text-center">Loading...</p>
+        <div className="text-center">
+          <Spin tip="Loading..." size="large" />
+        </div>
       )}
     </div>
   );
