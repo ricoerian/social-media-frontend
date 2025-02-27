@@ -137,7 +137,7 @@ const Profile: React.FC = () => {
   };
 
   return (
-    <div className="max-w-lg mx-auto mt-10 bg-white p-8 rounded-lg shadow-lg">
+    <div className="max-w-lg mx-auto mt-10 bg-white rounded-lg shadow-lg">
       <h2 className="text-3xl font-bold mb-6 text-center">Profile</h2>
       {user ? (
         <>
