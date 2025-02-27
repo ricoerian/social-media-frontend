@@ -10,6 +10,8 @@ import {
   UploadFile,
   Carousel,
   Avatar,
+  Dropdown,
+  Menu,
 } from 'antd';
 import {
   PlusOutlined,
@@ -17,6 +19,7 @@ import {
   HeartOutlined,
   HeartFilled,
   CheckCircleTwoTone,
+  EllipsisOutlined,
 } from '@ant-design/icons';
 import API from '../api';
 import { useAuth } from '../hooks/useAuth';
@@ -44,7 +47,7 @@ const TruncatedText: React.FC<{
   );
 };
 
-interface FeedUser {
+export interface FeedUser {
   ID: number;
   Fullname: string;
   Username: string;
@@ -89,10 +92,7 @@ interface CreateFeedFormValues {
 const getInitials = (name: string): string => {
   const words = name.split(' ');
   if (words.length === 1) return words[0].charAt(0).toUpperCase();
-  return words
-    .slice(0, 2)
-    .map((w) => w.charAt(0).toUpperCase())
-    .join('');
+  return words.slice(0, 2).map((w) => w.charAt(0).toUpperCase()).join('');
 };
 
 const renderMedia = (filePath: string): React.ReactNode => {
@@ -135,10 +135,7 @@ const renderMedia = (filePath: string): React.ReactNode => {
 const renderUserAvatar = (photoUrl?: string, name?: string, size = 40) => {
   if (photoUrl) {
     return (
-      <div
-        className="rounded-full overflow-hidden flex-shrink-0"
-        style={{ width: size, height: size }}
-      >
+      <div className="rounded-full overflow-hidden flex-shrink-0" style={{ width: size, height: size }}>
         <img
           src={`${import.meta.env.VITE_GOLANG_API_BASE_URL}/${photoUrl}`}
           alt="avatar"
@@ -221,10 +218,7 @@ const Feeds: React.FC = () => {
     setFileList(fileList);
     const urls = fileList
       .filter((file) => file.originFileObj)
-      .map(
-        (file) =>
-          file.originFileObj && (URL.createObjectURL(file.originFileObj) as string)
-      );
+      .map((file) => file.originFileObj && (URL.createObjectURL(file.originFileObj) as string));
     setPreviewUrls(urls.filter((url): url is string => !!url));
   };
 
@@ -316,6 +310,30 @@ const Feeds: React.FC = () => {
       message.error(err.response?.data?.error || 'Gagal menghapus komentar');
     }
   };
+
+  // Menu untuk dropdown feed
+  const feedMenu = (feed: FeedItem) => (
+    <Menu>
+      <Menu.Item key="edit" onClick={() => openEditFeedModal(feed)}>
+        Edit
+      </Menu.Item>
+      <Menu.Item key="delete" onClick={() => handleDeleteFeed(feed.ID)}>
+        Hapus
+      </Menu.Item>
+    </Menu>
+  );
+
+  // Menu untuk dropdown comment
+  const commentMenu = (comment: CommentItem) => (
+    <Menu>
+      <Menu.Item key="edit" onClick={() => openEditCommentModal(comment)}>
+        Edit
+      </Menu.Item>
+      <Menu.Item key="delete" onClick={() => handleDeleteComment(comment.ID)}>
+        Hapus
+      </Menu.Item>
+    </Menu>
+  );
 
   return (
     <div className="container mx-auto">
@@ -444,19 +462,16 @@ const Feeds: React.FC = () => {
 
           return (
             <List.Item key={item.ID} className="mb-6">
-              {/* Bungkus feed dengan container relative */}
               <div className="relative bg-white border border-gray-200 rounded-lg shadow-sm w-full md:w-3/4 lg:w-2/3 mx-auto">
-                {/* Tombol delete (dan edit) ditempatkan di pojok kanan atas */}
+                {/* Dropdown di pojok kanan atas untuk Feed */}
                 {user && item.User?.ID === user.ID && (
-                  <div className="absolute top-0 right-0 p-2 flex flex-col gap-1">
-                    <Button type="link" onClick={() => openEditFeedModal(item)}>
-                      Edit
-                    </Button>
-                    <Button type="link" danger onClick={() => handleDeleteFeed(item.ID)}>
-                      Hapus
-                    </Button>
+                  <div className="absolute top-0 right-0 p-2">
+                    <Dropdown overlay={feedMenu(item)} trigger={['click']}>
+                      <Button type="text" icon={<EllipsisOutlined />} />
+                    </Dropdown>
                   </div>
                 )}
+
                 <div className="flex p-4 justify-between items-start">
                   <div className="flex items-start space-x-3">
                     {renderUserAvatar(item.User?.PhotoProfile, item.User?.Fullname, 40)}
@@ -540,14 +555,9 @@ const Feeds: React.FC = () => {
                               };
 
                         return (
-                          // Bungkus comment dengan container relative
                           <div key={comment.ID} className="mt-2 relative">
                             <div className="flex items-start space-x-2">
-                              {renderUserAvatar(
-                                commentUser.PhotoProfile,
-                                commentUser.Fullname,
-                                30
-                              )}
+                              {renderUserAvatar(commentUser.PhotoProfile, commentUser.Fullname, 30)}
                               <div className="break-all min-w-0 flex-1">
                                 <p className="text-sm font-semibold break-all">
                                   {commentUser.Fullname || 'Unknown'}{' '}
@@ -563,18 +573,12 @@ const Feeds: React.FC = () => {
                                 </p>
                               </div>
                             </div>
+                            {/* Dropdown untuk Comment di pojok kanan atas */}
                             {user && commentUser.ID === user.ID && (
                               <div className="absolute top-0 right-0 p-1">
-                                <Button type="link" onClick={() => openEditCommentModal(comment)}>
-                                  Edit
-                                </Button>
-                                <Button
-                                  type="link"
-                                  danger
-                                  onClick={() => handleDeleteComment(comment.ID)}
-                                >
-                                  Hapus
-                                </Button>
+                                <Dropdown overlay={commentMenu(comment)} trigger={['click']}>
+                                  <Button type="text" icon={<EllipsisOutlined />} />
+                                </Dropdown>
                               </div>
                             )}
                           </div>
@@ -584,9 +588,7 @@ const Feeds: React.FC = () => {
                         <div className="mt-2">
                           <Button
                             type="link"
-                            onClick={() =>
-                              setShowAllComments((prev) => ({ ...prev, [item.ID]: true }))
-                            }
+                            onClick={() => setShowAllComments((prev) => ({ ...prev, [item.ID]: true }))}
                           >
                             Lihat semua komentar
                           </Button>
