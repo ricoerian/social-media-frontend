@@ -395,7 +395,7 @@ const Feeds: React.FC = () => {
                     </Avatar>
                     <div className="ml-4">
                       <p className="font-semibold text-sm">
-                        {item.User ? item.User.Username : 'Unknown'}
+                        {item.User ? item.User.Fullname : 'Unknown'}
                       </p>
                       <p className="text-xs text-gray-500">
                         {new Date(item.CreatedAt).toLocaleString()}
@@ -484,7 +484,7 @@ const Feeds: React.FC = () => {
                               </Avatar>
                               <div className="ml-2 flex-1">
                                 <p className="text-sm font-semibold">
-                                  {commentUser.Username || 'Unknown'}{' '}
+                                  {commentUser.Fullname || 'Unknown'}{' '}
                                   <span className="text-xs text-gray-500 ml-2">
                                     {new Date(comment.CreatedAt).toLocaleString()}
                                   </span>
