@@ -1,7 +1,7 @@
 // src/pages/UserDetail.tsx
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { Avatar, Button, List, message } from 'antd';
+import { Avatar, Button, List, message, Grid } from 'antd';
 import API from '../api';
 
 interface IUser {
@@ -30,8 +30,10 @@ const UserDetail: React.FC = () => {
   const [feeds, setFeeds] = useState<IFeed[]>([]);
   const [isFollowing, setIsFollowing] = useState<boolean>(false);
   const baseUrl = import.meta.env.VITE_GOLANG_API_BASE_URL;
+  const { useBreakpoint } = Grid;
+  const screens = useBreakpoint();
+  const avatarSize = screens.sm ? 80 : 64;
 
-  // Ambil detail user dari endpoint /users (asumsi endpoint ini mengembalikan semua user)
   useEffect(() => {
     const fetchUserDetail = async () => {
       try {
@@ -104,29 +106,34 @@ const UserDetail: React.FC = () => {
 
   return (
     <div className="max-w-2xl mx-auto p-4">
-      <div className="flex items-center space-x-4 mb-6">
-        <Avatar
-          size={80}
-          src={userDetail.PhotoProfile ? `${baseUrl}/${userDetail.PhotoProfile}` : undefined}
-        >
-          {userDetail.Fullname.charAt(0)}
-        </Avatar>
-        <div>
+      {/* Header user detail dengan layout responsif */}
+      <div className="flex flex-col md:flex-row md:items-center md:space-x-6 mb-6">
+        <div className="flex justify-center">
+          <Avatar
+            size={avatarSize}
+            src={userDetail.PhotoProfile ? `${baseUrl}/${userDetail.PhotoProfile}` : undefined}
+          >
+            {userDetail.Fullname.charAt(0)}
+          </Avatar>
+        </div>
+        <div className="mt-4 md:mt-0 text-center md:text-left">
           <h2 className="text-2xl font-bold">{userDetail.Fullname}</h2>
           <p className="text-gray-500">@{userDetail.Username}</p>
-        </div>
-        <div className="ml-auto">
-          {isFollowing ? (
-            <Button type="primary" danger onClick={handleUnfollow}>
-              Followed
-            </Button>
-          ) : (
-            <Button type="primary" onClick={handleFollow}>
-              Follow
-            </Button>
-          )}
+          <div className="mt-2">
+            {isFollowing ? (
+              <Button type="primary" danger onClick={handleUnfollow}>
+                Followed
+              </Button>
+            ) : (
+              <Button type="primary" onClick={handleFollow}>
+                Follow
+              </Button>
+            )}
+          </div>
         </div>
       </div>
+
+      {/* Feeds user */}
       <div>
         <h3 className="text-xl font-semibold mb-4">Feeds</h3>
         {feeds.length > 0 ? (
