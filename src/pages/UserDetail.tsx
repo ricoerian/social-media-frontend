@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Avatar, Button, List, message, Grid, Carousel, Spin } from 'antd';
+import { CheckCircleTwoTone } from '@ant-design/icons';
 import API from '../api';
 
 interface IUser {
@@ -33,7 +34,6 @@ const UserDetail: React.FC = () => {
   const screens = useBreakpoint();
   const avatarSize = screens.sm ? 200 : 128;
 
-  // Ambil detail user dari endpoint /users
   useEffect(() => {
     const fetchUserDetail = async () => {
       try {
@@ -50,7 +50,6 @@ const UserDetail: React.FC = () => {
     fetchUserDetail();
   }, [userId]);
 
-  // Ambil semua feed lalu filter feed yang dibuat oleh user tersebut
   useEffect(() => {
     const fetchFeeds = async () => {
       try {
@@ -65,7 +64,6 @@ const UserDetail: React.FC = () => {
     fetchFeeds();
   }, [userId]);
 
-  // Cek apakah current user sudah mengikuti user target
   useEffect(() => {
     const fetchFollowing = async () => {
       try {
@@ -100,7 +98,6 @@ const UserDetail: React.FC = () => {
     }
   };
 
-  // Fungsi untuk merender media (gambar, video, audio, atau link download)
   const renderMedia = (filePath: string): React.ReactNode => {
     const fileUrl = `${baseUrl}/${filePath}`;
     const ext = filePath.split('.').pop()?.toLowerCase();
@@ -143,8 +140,13 @@ const UserDetail: React.FC = () => {
   }
 
   return (
-    <div className="max-w-2xl mx-auto p-4">
-      {/* Header user detail dengan layout responsif */}
+    <div
+      className={`max-w-2xl mx-auto p-4 ${
+        userDetail.ID === 1
+          ? 'bg-gradient-to-r from-blue-100 to-purple-100 filter saturate-125 drop-shadow-xl'
+          : ''
+      }`}
+    >
       <div className="flex flex-col md:flex-row md:items-center md:space-x-6 mb-6">
         <div className="flex justify-center">
           <Avatar
@@ -155,7 +157,12 @@ const UserDetail: React.FC = () => {
           </Avatar>
         </div>
         <div className="mt-4 md:mt-0 text-center md:text-left">
-          <h2 className="text-2xl font-bold !break-all">{userDetail.Fullname}</h2>
+          <h2 className="text-2xl font-bold !break-all">
+            {userDetail.Fullname}
+            {userDetail.ID === 1 && (
+              <CheckCircleTwoTone style={{ marginLeft: 8 }} />
+            )}
+          </h2>
           <p className="text-gray-500 !break-all">@{userDetail.Username}</p>
           <div className="mt-2">
             {isFollowing ? (
@@ -170,8 +177,6 @@ const UserDetail: React.FC = () => {
           </div>
         </div>
       </div>
-
-      {/* Feeds user */}
       <div>
         <h3 className="text-xl font-semibold mb-4">Feeds</h3>
         {feeds.length > 0 ? (
