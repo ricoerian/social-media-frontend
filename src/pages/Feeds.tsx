@@ -433,7 +433,7 @@ const Feeds: React.FC = () => {
                       <p className="font-semibold text-sm break-all">
                         {item.User ? item.User.Fullname : 'Unknown'}{' '}
                         {item.User?.ID === 1 && (
-                          <CheckCircleTwoTone twoToneColor="#52c41a" style={{ marginLeft: 4 }} />
+                          <CheckCircleTwoTone style={{ marginLeft: 4 }} />
                         )}
                       </p>
                       <p className="text-xs text-gray-500 break-all">
@@ -534,7 +534,7 @@ const Feeds: React.FC = () => {
                                 <p className="text-sm font-semibold break-all">
                                   {commentUser.Fullname || 'Unknown'}{' '}
                                   {commentUser.ID === 1 && (
-                                    <CheckCircleTwoTone twoToneColor="#52c41a" style={{ marginLeft: 4 }} />
+                                    <CheckCircleTwoTone style={{ marginLeft: 4 }} />
                                   )}
                                   <span className="text-xs text-gray-500 ml-2">
                                     {new Date(comment.CreatedAt).toLocaleString()}
