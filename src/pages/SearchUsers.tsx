@@ -44,21 +44,19 @@ const SearchUsers: React.FC = () => {
         itemLayout="horizontal"
         dataSource={filteredUsers}
         renderItem={user => (
-          <List.Item>
-            <List.Item.Meta
-              avatar={
-                <Avatar src={user.PhotoProfile ? `${baseUrl}/${user.PhotoProfile}` : undefined}>
-                  {user.Fullname.charAt(0)}
-                </Avatar>
-              }
-              title={
-                <Link to={`/user/${user.ID}`}>
-                  {user.Fullname}
-                </Link>
-              }
-              description={user.Username}
-            />
-          </List.Item>
+          <Link to={`/user/${user.ID}`}>
+            <List.Item>
+                <List.Item.Meta
+                avatar={
+                    <Avatar src={user.PhotoProfile ? `${baseUrl}/${user.PhotoProfile}` : undefined}>
+                    {user.Fullname.charAt(0)}
+                    </Avatar>
+                }
+                title={user.Fullname}
+                description={user.Username}
+                />
+            </List.Item>
+          </Link>
         )}
       />
     </div>
