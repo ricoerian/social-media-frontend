@@ -32,7 +32,7 @@ const UserDetail: React.FC = () => {
   const baseUrl = import.meta.env.VITE_GOLANG_API_BASE_URL;
   const { useBreakpoint } = Grid;
   const screens = useBreakpoint();
-  const avatarSize = screens.sm ? 80 : 64;
+  const avatarSize = screens.sm ? 200 : 80;
 
   useEffect(() => {
     const fetchUserDetail = async () => {
@@ -117,8 +117,8 @@ const UserDetail: React.FC = () => {
           </Avatar>
         </div>
         <div className="mt-4 md:mt-0 text-center md:text-left">
-          <h2 className="text-2xl font-bold">{userDetail.Fullname}</h2>
-          <p className="text-gray-500">@{userDetail.Username}</p>
+          <h2 className="text-2xl font-bold !m-0">{userDetail.Fullname}</h2>
+          <p className="text-gray-500 !m-0">@{userDetail.Username}</p>
           <div className="mt-2">
             {isFollowing ? (
               <Button type="primary" danger onClick={handleUnfollow}>
