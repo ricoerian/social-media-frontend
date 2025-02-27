@@ -491,7 +491,7 @@ const Feeds: React.FC = () => {
                                 </p>
                                 {/* Jika sedang dalam mode edit komentar */}
                                 {Object.prototype.hasOwnProperty.call(editingComments, comment.ID) ? (
-                                  <div className="w-full flex items-center gap-2">
+                                  <div className="!w-full flex items-center gap-2">
                                     <Input
                                       value={editingComments[comment.ID]}
                                       onChange={(e) =>
