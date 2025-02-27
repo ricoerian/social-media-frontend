@@ -162,13 +162,9 @@ const Feeds: React.FC = () => {
   const [fileList, setFileList] = useState<UploadFile[]>([]);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [commentValues, setCommentValues] = useState<{ [key: number]: string }>({});
-
   const [editingFeed, setEditingFeed] = useState<FeedItem | null>(null);
   const [isEditFeedModalVisible, setIsEditFeedModalVisible] = useState<boolean>(false);
-
   const [editingComments, setEditingComments] = useState<{ [commentId: number]: string }>({});
-
-  // State untuk melacak apakah seluruh komentar untuk suatu feed sudah ditampilkan
   const [showAllComments, setShowAllComments] = useState<{ [feedId: number]: boolean }>({});
 
   const fetchFeeds = async (): Promise<void> => {
@@ -474,9 +470,9 @@ const Feeds: React.FC = () => {
                   <div className="flex items-center space-x-4">
                     <Button type="text" onClick={() => handleLike(item.ID)}>
                       {isLiked ? (
-                        <HeartFilled className="text-red-500" />
+                        <HeartFilled className="!text-red-500" />
                       ) : (
-                        <HeartOutlined />
+                        <HeartOutlined className="!text-red-500" />
                       )}
                       <span className="ml-1 text-sm">{likeCount}</span>
                     </Button>
