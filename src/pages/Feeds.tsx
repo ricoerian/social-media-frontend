@@ -85,16 +85,16 @@ const renderMedia = (filePath: string): React.ReactNode => {
       <img
         src={url}
         alt="Feed media"
-        className="w-full max-h-96 object-cover rounded mb-4"
+        className="w-full h-full object-cover rounded"
       />
     );
   } else if (videoExtensions.includes(extension)) {
     return (
-      <video controls className="w-full max-h-96 object-cover rounded mb-4" src={url} />
+      <video controls className="w-full h-full object-cover rounded" src={url} />
     );
   } else if (audioExtensions.includes(extension)) {
     return (
-      <audio controls className="w-full mb-4" src={url} />
+      <audio controls className="w-full" src={url} />
     );
   } else {
     return (
