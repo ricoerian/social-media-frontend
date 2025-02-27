@@ -280,6 +280,30 @@ const Feeds: React.FC = () => {
     }
   };
 
+  // Komponen Avatar: jika PhotoProfile ada, pakai <img> dalam <div> fixed size
+  const renderUserAvatar = (photoUrl?: string, name?: string, size = 40) => {
+    if (photoUrl) {
+      return (
+        <div
+          className="rounded-full overflow-hidden flex-shrink-0"
+          style={{ width: size, height: size }}
+        >
+          <img
+            src={`${import.meta.env.VITE_GOLANG_API_BASE_URL}/${photoUrl}`}
+            alt="avatar"
+            className="w-full h-full object-cover"
+          />
+        </div>
+      );
+    }
+    // Kalau tidak ada PhotoProfile, pakai <Avatar> bawaan antd
+    return (
+      <Avatar shape="circle" size={size}>
+        {name ? getInitials(name) : 'U'}
+      </Avatar>
+    );
+  };
+
   return (
     <div className="container mx-auto">
       {/* Modal Pembuatan Feed */}
@@ -387,32 +411,15 @@ const Feeds: React.FC = () => {
             );
           const likeCount = item.Reactions ? item.Reactions.length : 0;
 
-          // Komponen avatar feed, cek jika ada foto atau tidak
-          const FeedAvatar = item.User?.PhotoProfile ? (
-            // GANTI: <div> + <img> agar tidak terdistorsi
-            <div className="rounded-full w-10 h-10 overflow-hidden">
-              <img
-                src={`${import.meta.env.VITE_GOLANG_API_BASE_URL}/${item.User.PhotoProfile}`}
-                alt="avatar"
-                className="w-full h-full object-cover"
-              />
-            </div>
-          ) : (
-            <Avatar shape="circle" size={40}>
-              {item.User
-                ? getInitials(item.User.Fullname || item.User.Username)
-                : 'U'}
-            </Avatar>
-          );
-
           return (
             <List.Item key={item.ID} className="mb-6">
               <div className="bg-white border border-gray-200 rounded-lg shadow-sm w-full md:w-3/4 lg:w-2/3 mx-auto">
-                {/* Header */}
-                <div className="flex items-center p-4 justify-between">
-                  <div className="flex items-center">
-                    {FeedAvatar /* GANTI: avatar feed */}
-                    <div className="ml-4 overflow-hidden">
+                {/* Header: avatar + nama user */}
+                {/* PENTING: Gunakan items-start, flex-shrink-0, break-all */}
+                <div className="flex p-4 justify-between items-start">
+                  <div className="flex items-start space-x-3">
+                    {renderUserAvatar(item.User?.PhotoProfile, item.User?.Fullname, 40)}
+                    <div className="break-all min-w-0">
                       <p className="font-semibold text-sm break-all">
                         {item.User ? item.User.Fullname : 'Unknown'}
                       </p>
@@ -423,7 +430,7 @@ const Feeds: React.FC = () => {
                   </div>
                   {/* Tombol edit & hapus feed (hanya pemilik feed) */}
                   {user && item.User?.ID === user.ID && (
-                    <div>
+                    <div className="flex-shrink-0">
                       <Button type="link" onClick={() => openEditFeedModal(item)}>
                         Edit
                       </Button>
@@ -433,7 +440,8 @@ const Feeds: React.FC = () => {
                     </div>
                   )}
                 </div>
-                {/* Konten Post */}
+
+                {/* Konten Post (media) */}
                 {filePaths.length > 0 && (
                   <div className="w-full">
                     {filePaths.length === 1 ? (
@@ -447,7 +455,8 @@ const Feeds: React.FC = () => {
                     )}
                   </div>
                 )}
-                {/* Footer/Aksi */}
+
+                {/* Isi feed + aksi */}
                 <div className="p-4">
                   <p className="text-sm mb-2 break-all">{item.Feed}</p>
                   <div className="flex items-center space-x-4">
@@ -460,6 +469,7 @@ const Feeds: React.FC = () => {
                       <span className="ml-1 text-sm">{likeCount}</span>
                     </Button>
                   </div>
+
                   {/* Form Komentar */}
                   {user && (
                     <div className="flex flex-col sm:flex-row gap-2 mt-4">
@@ -479,7 +489,8 @@ const Feeds: React.FC = () => {
                       </Button>
                     </div>
                   )}
-                  {/* Tampilkan Komentar jika ada */}
+
+                  {/* Daftar Komentar */}
                   {item.Comments && item.Comments.length > 0 && (
                     <div className="mt-4 border-t pt-4">
                       {item.Comments.map((comment) => {
@@ -493,27 +504,21 @@ const Feeds: React.FC = () => {
                                 Fullname: '',
                               };
 
-                        // Komponen avatar komentar
-                        const CommentAvatar = commentUser.PhotoProfile ? (
-                          // GANTI: <div> + <img> agar tidak terdistorsi
-                          <div className="rounded-full w-8 h-8 overflow-hidden">
-                            <img
-                              src={`${import.meta.env.VITE_GOLANG_API_BASE_URL}/${commentUser.PhotoProfile}`}
-                              alt="avatar"
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
-                        ) : (
-                          <Avatar shape="circle" size={30}>
-                            {getInitials(commentUser.Fullname || commentUser.Username)}
-                          </Avatar>
+                        const isEditing = Object.prototype.hasOwnProperty.call(
+                          editingComments,
+                          comment.ID
                         );
 
                         return (
-                          <div key={comment.ID} className="flex flex-col mt-2">
-                            <div className="flex items-start">
-                              {CommentAvatar /* GANTI: avatar komentar */}
-                              <div className="ml-2 overflow-hidden">
+                          <div key={comment.ID} className="mt-2">
+                            {/* Layout avatar komentar + isi komentar */}
+                            <div className="flex items-start space-x-2">
+                              {renderUserAvatar(
+                                commentUser.PhotoProfile,
+                                commentUser.Fullname,
+                                30
+                              )}
+                              <div className="break-all min-w-0 flex-1">
                                 <p className="text-sm font-semibold break-all">
                                   {commentUser.Fullname || 'Unknown'}{' '}
                                   <span className="text-xs text-gray-500 ml-2">
@@ -521,10 +526,7 @@ const Feeds: React.FC = () => {
                                   </span>
                                 </p>
                                 {/* Jika sedang dalam mode edit komentar */}
-                                {Object.prototype.hasOwnProperty.call(
-                                  editingComments,
-                                  comment.ID
-                                ) ? (
+                                {isEditing ? (
                                   <div className="!w-full flex items-center gap-2">
                                     <Input
                                       value={editingComments[comment.ID]}
@@ -539,25 +541,20 @@ const Feeds: React.FC = () => {
                                     <Button onClick={() => handleUpdateComment(comment.ID)}>
                                       Simpan
                                     </Button>
-                                    <Button
-                                      onClick={() => cancelEditComment(comment.ID)}
-                                      danger
-                                    >
+                                    <Button onClick={() => cancelEditComment(comment.ID)} danger>
                                       Batal
                                     </Button>
                                   </div>
                                 ) : (
-                                  <p className="text-sm break-all">{comment.Comment}</p>
+                                  <p className="text-sm break-all">
+                                    {comment.Comment}
+                                  </p>
                                 )}
                               </div>
-                              {/* Tombol edit & hapus komentar */}
-                              <div className="ml-2">
-                                {user &&
-                                  commentUser.ID === user.ID &&
-                                  !Object.prototype.hasOwnProperty.call(
-                                    editingComments,
-                                    comment.ID
-                                  ) && (
+                              {/* Tombol Edit/Hapus Komentar di sebelah kanan */}
+                              {user && commentUser.ID === user.ID && (
+                                <div className="ml-2 flex-shrink-0">
+                                  {!isEditing && (
                                     <Button
                                       type="link"
                                       onClick={() => startEditComment(comment)}
@@ -565,7 +562,6 @@ const Feeds: React.FC = () => {
                                       Edit
                                     </Button>
                                   )}
-                                {user && commentUser.ID === user.ID && (
                                   <Button
                                     type="link"
                                     danger
@@ -573,8 +569,8 @@ const Feeds: React.FC = () => {
                                   >
                                     Hapus
                                   </Button>
-                                )}
-                              </div>
+                                </div>
+                              )}
                             </div>
                           </div>
                         );
