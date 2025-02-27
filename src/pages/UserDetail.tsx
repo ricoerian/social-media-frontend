@@ -1,4 +1,3 @@
-// src/pages/UserDetail.tsx
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Avatar, Button, List, message, Grid, Carousel } from 'antd';
@@ -29,11 +28,10 @@ const UserDetail: React.FC = () => {
   const [userDetail, setUserDetail] = useState<IUser | null>(null);
   const [feeds, setFeeds] = useState<IFeed[]>([]);
   const [isFollowing, setIsFollowing] = useState<boolean>(false);
-  const [followersCount, setFollowersCount] = useState<number>(0);
   const baseUrl = import.meta.env.VITE_GOLANG_API_BASE_URL;
   const { useBreakpoint } = Grid;
   const screens = useBreakpoint();
-  const avatarSize = screens.sm ? 80 : 64;
+  const avatarSize = screens.sm ? 200 : 128;
 
   // Ambil detail user dari endpoint /users
   useEffect(() => {
@@ -52,7 +50,7 @@ const UserDetail: React.FC = () => {
     fetchUserDetail();
   }, [userId]);
 
-  // Ambil feeds yang dibuat oleh user tersebut
+  // Ambil semua feed lalu filter feed yang dibuat oleh user tersebut
   useEffect(() => {
     const fetchFeeds = async () => {
       try {
@@ -82,28 +80,11 @@ const UserDetail: React.FC = () => {
     fetchFollowing();
   }, [userId]);
 
-  // Ambil jumlah followers menggunakan endpoint GET /followers
-  useEffect(() => {
-    const fetchFollowersCount = async () => {
-      try {
-        const res = await API.get('/followers');
-        // Endpoint ini mengembalikan daftar followers dari user yang sedang login
-        setFollowersCount(res.data.followers.length);
-      } catch (error) {
-        console.error('Error fetching followers', error);
-      }
-    };
-    fetchFollowersCount();
-  }, []);
-
   const handleFollow = async () => {
     try {
       await API.post(`/follow/${userId}`);
       message.success('Berhasil mengikuti user');
       setIsFollowing(true);
-      // Refresh followers count
-      const res = await API.get('/followers');
-      setFollowersCount(res.data.followers.length);
     } catch {
       message.error('Gagal mengikuti user');
     }
@@ -114,9 +95,6 @@ const UserDetail: React.FC = () => {
       await API.delete(`/follow/${userId}`);
       message.success('Berhasil berhenti mengikuti user');
       setIsFollowing(false);
-      // Refresh followers count
-      const res = await API.get('/followers');
-      setFollowersCount(res.data.followers.length);
     } catch {
       message.error('Gagal berhenti mengikuti user');
     }
@@ -134,7 +112,7 @@ const UserDetail: React.FC = () => {
         <img
           src={fileUrl}
           alt="attachment"
-          className="object-cover rounded w-full max-h-80"
+          className="object-cover rounded w-full h-full"
         />
       );
     } else if (ext && videoExt.includes(ext)) {
@@ -142,7 +120,7 @@ const UserDetail: React.FC = () => {
         <video
           controls
           src={fileUrl}
-          className="object-cover rounded w-full max-h-80"
+          className="object-cover rounded w-full h-full"
         />
       );
     } else if (ext && audioExt.includes(ext)) {
@@ -150,7 +128,7 @@ const UserDetail: React.FC = () => {
     } else {
       return (
         <a href={fileUrl} download className="text-blue-500 underline">
-          Download File
+          {filePath.replace('public/uploads/', '')}
         </a>
       );
     }
@@ -175,7 +153,6 @@ const UserDetail: React.FC = () => {
         <div className="mt-4 md:mt-0 text-center md:text-left">
           <h2 className="text-2xl font-bold">{userDetail.Fullname}</h2>
           <p className="text-gray-500">@{userDetail.Username}</p>
-          <p className="text-gray-500">Followers: {followersCount}</p>
           <div className="mt-2">
             {isFollowing ? (
               <Button type="primary" danger onClick={handleUnfollow}>
