@@ -215,7 +215,7 @@ const Profile: React.FC = () => {
                 <Input.Password placeholder="Masukkan password baru" />
               </Form.Item>
               <Form.Item>
-                <Button type="default" className='!bg-red-500 text-white hover:text-white' htmlType="submit" block>
+                <Button type="default" className='!bg-red-500 !text-white hover:!text-white' htmlType="submit" block>
                   Change Password
                 </Button>
               </Form.Item>
