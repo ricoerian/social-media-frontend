@@ -183,7 +183,7 @@ const Profile: React.FC = () => {
                 <Button type="primary" htmlType="submit" block disabled={uploading} className="text-lg">
                   {uploading ? 'Updating Photo...' : 'Update Profile'}
                 </Button>
-                <Button type="default" onClick={() => setIsPasswordModalOpen(true)} className="text-lg w-full !bg-red-500">
+                <Button type="default" onClick={() => setIsPasswordModalOpen(true)} className="text-lg w-full !bg-red-500 !text-white hover:!text-white">
                   Change Password
                 </Button>
               </Flex>
