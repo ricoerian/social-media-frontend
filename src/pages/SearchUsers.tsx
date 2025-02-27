@@ -13,9 +13,21 @@ interface IUser {
 const SearchUsers: React.FC = () => {
   const [users, setUsers] = useState<IUser[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [currentUserId, setCurrentUserId] = useState<number | null>(null);
   const baseUrl = import.meta.env.VITE_GOLANG_API_BASE_URL;
 
   useEffect(() => {
+    // Fetch user yang sedang login
+    const fetchCurrentUser = async () => {
+      try {
+        const res = await API.get('/profile');
+        setCurrentUserId(res.data.user.ID);
+      } catch (error) {
+        console.error('Error fetching current user', error);
+      }
+    };
+
+    // Fetch semua users
     const fetchUsers = async () => {
       try {
         const res = await API.get('/users');
@@ -24,13 +36,18 @@ const SearchUsers: React.FC = () => {
         console.error('Error fetching users', error);
       }
     };
+
+    fetchCurrentUser();
     fetchUsers();
   }, []);
 
-  const filteredUsers = users.filter(user =>
-    user.Fullname.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    user.Username.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Filter users: Tidak menampilkan user yang sedang login
+  const filteredUsers = users
+    .filter(user => user.ID !== currentUserId) // Hapus user yang sedang login
+    .filter(user =>
+      user.Fullname.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user.Username.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
   return (
     <div className="max-w-lg mx-auto p-4">
@@ -44,17 +61,17 @@ const SearchUsers: React.FC = () => {
         itemLayout="horizontal"
         dataSource={filteredUsers}
         renderItem={user => (
-          <Link to={`/user/${user.ID}`}>
+          <Link to={`/user/${user.ID}`} key={user.ID}>
             <List.Item>
-                <List.Item.Meta
+              <List.Item.Meta
                 avatar={
-                    <Avatar src={user.PhotoProfile ? `${baseUrl}/${user.PhotoProfile}` : undefined}>
+                  <Avatar src={user.PhotoProfile ? `${baseUrl}/${user.PhotoProfile}` : undefined}>
                     {user.Fullname.charAt(0)}
-                    </Avatar>
+                  </Avatar>
                 }
                 title={user.Fullname}
                 description={user.Username}
-                />
+              />
             </List.Item>
           </Link>
         )}
