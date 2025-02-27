@@ -20,6 +20,41 @@ import {
 import API from '../api';
 import { useAuth } from '../hooks/useAuth';
 
+// --------------------------
+// Komponen TruncatedText
+// --------------------------
+/**
+ * Komponen untuk memotong teks jika terlalu panjang.
+ * Akan menampilkan "Lihat selengkapnya" jika teks melebihi maxLength.
+ */
+const TruncatedText: React.FC<{
+  text: string;
+  maxLength?: number;
+}> = ({ text, maxLength = 100 }) => {
+  const [expanded, setExpanded] = useState(false);
+
+  // Jika teks lebih pendek dari maxLength, tampilkan apa adanya.
+  if (text.length <= maxLength) {
+    return <span>{text}</span>;
+  }
+
+  // Jika teks lebih panjang, cek apakah sedang expanded atau tidak.
+  return (
+    <span>
+      {expanded ? text : text.slice(0, maxLength) + '...'}{' '}
+      <button
+        onClick={() => setExpanded(!expanded)}
+        className="text-blue-500 hover:underline"
+      >
+        {expanded ? 'Tampilkan lebih sedikit' : 'Lihat selengkapnya'}
+      </button>
+    </span>
+  );
+};
+
+// --------------------------
+// Tipe data
+// --------------------------
 interface FeedUser {
   ID: number;
   Fullname: string;
@@ -62,14 +97,21 @@ interface CreateFeedFormValues {
   feed: string;
 }
 
+// --------------------------
+// Helper & Utils
+// --------------------------
+
 // Helper untuk mendapatkan inisial nama
 const getInitials = (name: string): string => {
   const words = name.split(' ');
   if (words.length === 1) return words[0].charAt(0).toUpperCase();
-  return words.slice(0, 2).map((w) => w.charAt(0).toUpperCase()).join('');
+  return words
+    .slice(0, 2)
+    .map((w) => w.charAt(0).toUpperCase())
+    .join('');
 };
 
-// Fungsi helper untuk merender media berdasarkan ekstensi file
+// Fungsi helper untuk merender media (gambar, video, audio, file)
 const renderMedia = (filePath: string): React.ReactNode => {
   const url = `${import.meta.env.VITE_GOLANG_API_BASE_URL}/${filePath}`;
   const extension = filePath.split('.').pop()?.toLowerCase();
@@ -107,6 +149,33 @@ const renderMedia = (filePath: string): React.ReactNode => {
   }
 };
 
+// Komponen Avatar: jika PhotoProfile ada, pakai <img> dalam <div> fixed size
+const renderUserAvatar = (photoUrl?: string, name?: string, size = 40) => {
+  if (photoUrl) {
+    return (
+      <div
+        className="rounded-full overflow-hidden flex-shrink-0"
+        style={{ width: size, height: size }}
+      >
+        <img
+          src={`${import.meta.env.VITE_GOLANG_API_BASE_URL}/${photoUrl}`}
+          alt="avatar"
+          className="w-full h-full object-cover"
+        />
+      </div>
+    );
+  }
+  // Kalau tidak ada PhotoProfile, pakai <Avatar> bawaan antd
+  return (
+    <Avatar shape="circle" size={size}>
+      {name ? getInitials(name) : 'U'}
+    </Avatar>
+  );
+};
+
+// --------------------------
+// Komponen Utama Feeds
+// --------------------------
 const Feeds: React.FC = () => {
   const { user } = useAuth();
   const [feeds, setFeeds] = useState<FeedItem[]>([]);
@@ -114,18 +183,23 @@ const Feeds: React.FC = () => {
   const [form] = Form.useForm<CreateFeedFormValues>();
   const [fileList, setFileList] = useState<UploadFile[]>([]);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
-  const [commentValues, setCommentValues] = useState<{ [key: number]: string }>({});
+  const [commentValues, setCommentValues] = useState<{ [key: number]: string }>(
+    {}
+  );
 
   // State untuk edit feed
   const [editingFeed, setEditingFeed] = useState<FeedItem | null>(null);
-  const [isEditFeedModalVisible, setIsEditFeedModalVisible] = useState<boolean>(false);
+  const [isEditFeedModalVisible, setIsEditFeedModalVisible] =
+    useState<boolean>(false);
 
   // State untuk edit komentar (mapping: commentID -> new text)
   const [editingComments, setEditingComments] = useState<{
     [commentId: number]: string;
   }>({});
 
+  // --------------------------
   // Ambil feed dari backend
+  // --------------------------
   const fetchFeeds = async (): Promise<void> => {
     try {
       const res = await API.get('/feeds');
@@ -139,6 +213,9 @@ const Feeds: React.FC = () => {
     fetchFeeds();
   }, []);
 
+  // --------------------------
+  // Create Feed
+  // --------------------------
   const handleCreateFeed = async (values: CreateFeedFormValues): Promise<void> => {
     try {
       const formData = new FormData();
@@ -163,6 +240,9 @@ const Feeds: React.FC = () => {
     }
   };
 
+  // --------------------------
+  // Like Feed
+  // --------------------------
   const handleLike = async (feedID: number): Promise<void> => {
     try {
       await API.post(`/feeds/${feedID}/like`);
@@ -174,6 +254,9 @@ const Feeds: React.FC = () => {
     }
   };
 
+  // --------------------------
+  // Upload File
+  // --------------------------
   const handleFileChange = ({ fileList }: { fileList: UploadFile[] }) => {
     setFileList(fileList);
     const urls = fileList
@@ -185,6 +268,9 @@ const Feeds: React.FC = () => {
     setPreviewUrls(urls.filter((url): url is string => !!url));
   };
 
+  // --------------------------
+  // Submit Comment
+  // --------------------------
   const handleSubmitComment = async (feedId: number) => {
     const comment = commentValues[feedId];
     if (!comment || comment.trim() === '') {
@@ -211,7 +297,9 @@ const Feeds: React.FC = () => {
     }
   };
 
-  // --- Fitur Edit & Hapus Feed ---
+  // --------------------------
+  // Edit & Hapus Feed
+  // --------------------------
   const openEditFeedModal = (feed: FeedItem) => {
     setEditingFeed(feed);
     setIsEditFeedModalVisible(true);
@@ -242,7 +330,9 @@ const Feeds: React.FC = () => {
     }
   };
 
-  // --- Fitur Edit & Hapus Komentar ---
+  // --------------------------
+  // Edit & Hapus Komentar
+  // --------------------------
   const startEditComment = (comment: CommentItem) => {
     setEditingComments((prev) => ({ ...prev, [comment.ID]: comment.Comment }));
   };
@@ -278,30 +368,6 @@ const Feeds: React.FC = () => {
       const err = error as { response?: { data?: { error?: string } } };
       message.error(err.response?.data?.error || 'Gagal menghapus komentar');
     }
-  };
-
-  // Komponen Avatar: jika PhotoProfile ada, pakai <img> dalam <div> fixed size
-  const renderUserAvatar = (photoUrl?: string, name?: string, size = 40) => {
-    if (photoUrl) {
-      return (
-        <div
-          className="rounded-full overflow-hidden flex-shrink-0"
-          style={{ width: size, height: size }}
-        >
-          <img
-            src={`${import.meta.env.VITE_GOLANG_API_BASE_URL}/${photoUrl}`}
-            alt="avatar"
-            className="w-full h-full object-cover"
-          />
-        </div>
-      );
-    }
-    // Kalau tidak ada PhotoProfile, pakai <Avatar> bawaan antd
-    return (
-      <Avatar shape="circle" size={size}>
-        {name ? getInitials(name) : 'U'}
-      </Avatar>
-    );
   };
 
   return (
@@ -415,7 +481,6 @@ const Feeds: React.FC = () => {
             <List.Item key={item.ID} className="mb-6">
               <div className="bg-white border border-gray-200 rounded-lg shadow-sm w-full md:w-3/4 lg:w-2/3 mx-auto">
                 {/* Header: avatar + nama user */}
-                {/* PENTING: Gunakan items-start, flex-shrink-0, break-all */}
                 <div className="flex p-4 justify-between items-start">
                   <div className="flex items-start space-x-3">
                     {renderUserAvatar(item.User?.PhotoProfile, item.User?.Fullname, 40)}
@@ -458,7 +523,10 @@ const Feeds: React.FC = () => {
 
                 {/* Isi feed + aksi */}
                 <div className="p-4">
-                  <p className="text-sm mb-2 break-all">{item.Feed}</p>
+                  {/* Gunakan TruncatedText agar isi feed tidak terlalu panjang */}
+                  <p className="text-sm mb-2 break-all">
+                    <TruncatedText text={item.Feed} maxLength={100} />
+                  </p>
                   <div className="flex items-center space-x-4">
                     <Button type="text" onClick={() => handleLike(item.ID)}>
                       {isLiked ? (
@@ -525,7 +593,6 @@ const Feeds: React.FC = () => {
                                     {new Date(comment.CreatedAt).toLocaleString()}
                                   </span>
                                 </p>
-                                {/* Jika sedang dalam mode edit komentar */}
                                 {isEditing ? (
                                   <div className="!w-full flex items-center gap-2">
                                     <Input
@@ -546,8 +613,12 @@ const Feeds: React.FC = () => {
                                     </Button>
                                   </div>
                                 ) : (
+                                  // Gunakan TruncatedText di komentar
                                   <p className="text-sm break-all">
-                                    {comment.Comment}
+                                    <TruncatedText
+                                      text={comment.Comment}
+                                      maxLength={100}
+                                    />
                                   </p>
                                 )}
                               </div>
