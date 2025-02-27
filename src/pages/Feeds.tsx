@@ -78,7 +78,11 @@ const renderMedia = (filePath: string): React.ReactNode => {
   const audioExtensions = ['mp3', 'wav', 'ogg'];
 
   if (!extension) {
-    return <a href={url} download className="text-blue-500 underline">Download File</a>;
+    return (
+      <a href={url} download className="text-blue-500 underline">
+        Download File
+      </a>
+    );
   }
   if (imageExtensions.includes(extension)) {
     return (
@@ -93,9 +97,7 @@ const renderMedia = (filePath: string): React.ReactNode => {
       <video controls className="w-full h-full object-cover rounded" src={url} />
     );
   } else if (audioExtensions.includes(extension)) {
-    return (
-      <audio controls className="w-full" src={url} />
-    );
+    return <audio controls className="w-full" src={url} />;
   } else {
     return (
       <a href={url} download className="text-blue-500 ml-4 underline block">
@@ -119,7 +121,9 @@ const Feeds: React.FC = () => {
   const [isEditFeedModalVisible, setIsEditFeedModalVisible] = useState<boolean>(false);
 
   // State untuk edit komentar (mapping: commentID -> new text)
-  const [editingComments, setEditingComments] = useState<{ [commentId: number]: string }>({});
+  const [editingComments, setEditingComments] = useState<{
+    [commentId: number]: string;
+  }>({});
 
   // Ambil feed dari backend
   const fetchFeeds = async (): Promise<void> => {
@@ -174,7 +178,10 @@ const Feeds: React.FC = () => {
     setFileList(fileList);
     const urls = fileList
       .filter((file) => file.originFileObj)
-      .map((file) => file.originFileObj && URL.createObjectURL(file.originFileObj) as string);
+      .map(
+        (file) =>
+          file.originFileObj && (URL.createObjectURL(file.originFileObj) as string)
+      );
     setPreviewUrls(urls.filter((url): url is string => !!url));
   };
 
@@ -250,7 +257,9 @@ const Feeds: React.FC = () => {
 
   const handleUpdateComment = async (commentID: number) => {
     try {
-      await API.put(`/comments/${commentID}`, { comment: editingComments[commentID] });
+      await API.put(`/comments/${commentID}`, {
+        comment: editingComments[commentID],
+      });
       message.success('Komentar berhasil diupdate');
       cancelEditComment(commentID);
       fetchFeeds();
@@ -347,8 +356,10 @@ const Feeds: React.FC = () => {
           rows={4}
           value={editingFeed?.Feed}
           onChange={(e) =>
-            editingFeed && setEditingFeed({ ...editingFeed, Feed: e.target.value })
+            editingFeed &&
+            setEditingFeed({ ...editingFeed, Feed: e.target.value })
           }
+          className="break-all" // Tambahan
         />
       </Modal>
 
@@ -393,11 +404,12 @@ const Feeds: React.FC = () => {
                         ? getInitials(item.User.Fullname || item.User.Username)
                         : 'U'}
                     </Avatar>
-                    <div className="ml-4">
-                      <p className="font-semibold text-sm">
+                    <div className="ml-4 overflow-hidden"> {/* Tambahan */}
+                      {/* Pastikan nama user tidak overflow */}
+                      <p className="font-semibold text-sm break-all"> {/* Tambahan */}
                         {item.User ? item.User.Fullname : 'Unknown'}
                       </p>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-gray-500 break-all"> {/* Tambahan */}
                         {new Date(item.CreatedAt).toLocaleString()}
                       </p>
                     </div>
@@ -430,7 +442,10 @@ const Feeds: React.FC = () => {
                 )}
                 {/* Footer/Aksi */}
                 <div className="p-4">
-                  <p className="text-sm mb-2">{item.Feed}</p>
+                  {/* Pastikan text feed wrap dengan baik */}
+                  <p className="text-sm mb-2 break-all"> {/* Tambahan */}
+                    {item.Feed}
+                  </p>
                   <div className="flex items-center space-x-4">
                     <Button type="text" onClick={() => handleLike(item.ID)}>
                       {isLiked ? (
@@ -468,7 +483,12 @@ const Feeds: React.FC = () => {
                         const commentUser =
                           comment.User && comment.User.Username.trim() !== ''
                             ? comment.User
-                            : { ID: 0, Username: 'Unknown', PhotoProfile: '', Fullname: '' };
+                            : {
+                                ID: 0,
+                                Username: 'Unknown',
+                                PhotoProfile: '',
+                                Fullname: '',
+                              };
                         return (
                           <div key={comment.ID} className="flex flex-col mt-2">
                             <div className="flex items-start">
@@ -480,17 +500,22 @@ const Feeds: React.FC = () => {
                                     : undefined
                                 }
                               >
-                                {getInitials(commentUser.Fullname || commentUser.Username)}
+                                {getInitials(
+                                  commentUser.Fullname || commentUser.Username
+                                )}
                               </Avatar>
-                              <div className="ml-2">
-                                <p className="text-sm font-semibold">
+                              <div className="ml-2 overflow-hidden"> {/* Tambahan */}
+                                <p className="text-sm font-semibold break-all"> {/* Tambahan */}
                                   {commentUser.Fullname || 'Unknown'}{' '}
                                   <span className="text-xs text-gray-500 ml-2">
                                     {new Date(comment.CreatedAt).toLocaleString()}
                                   </span>
                                 </p>
                                 {/* Jika sedang dalam mode edit komentar */}
-                                {Object.prototype.hasOwnProperty.call(editingComments, comment.ID) ? (
+                                {Object.prototype.hasOwnProperty.call(
+                                  editingComments,
+                                  comment.ID
+                                ) ? (
                                   <div className="!w-full flex items-center gap-2">
                                     <Input
                                       value={editingComments[comment.ID]}
@@ -500,6 +525,7 @@ const Feeds: React.FC = () => {
                                           [comment.ID]: e.target.value,
                                         }))
                                       }
+                                      className="break-all" // Tambahan
                                     />
                                     <Button onClick={() => handleUpdateComment(comment.ID)}>
                                       Simpan
@@ -512,26 +538,36 @@ const Feeds: React.FC = () => {
                                     </Button>
                                   </div>
                                 ) : (
-                                  <p className="text-sm !break-words">{comment.Comment}</p>
+                                  // Pastikan komentar tidak overflow
+                                  <p className="text-sm break-all"> {/* Tambahan */}
+                                    {comment.Comment}
+                                  </p>
                                 )}
                               </div>
                               {/* Tombol edit & hapus komentar */}
                               <div className="ml-2">
-                                {user && commentUser.ID === user.ID && !Object.prototype.hasOwnProperty.call(editingComments, comment.ID) && (
-                                  <Button type="link" onClick={() => startEditComment(comment)}>
-                                    Edit
-                                  </Button>
-                                )}
                                 {user &&
-                                  (commentUser.ID === user.ID) && (
+                                  commentUser.ID === user.ID &&
+                                  !Object.prototype.hasOwnProperty.call(
+                                    editingComments,
+                                    comment.ID
+                                  ) && (
                                     <Button
                                       type="link"
-                                      danger
-                                      onClick={() => handleDeleteComment(comment.ID)}
+                                      onClick={() => startEditComment(comment)}
                                     >
-                                      Hapus
+                                      Edit
                                     </Button>
                                   )}
+                                {user && commentUser.ID === user.ID && (
+                                  <Button
+                                    type="link"
+                                    danger
+                                    onClick={() => handleDeleteComment(comment.ID)}
+                                  >
+                                    Hapus
+                                  </Button>
+                                )}
                               </div>
                             </div>
                           </div>
