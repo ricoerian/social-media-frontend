@@ -482,7 +482,7 @@ const Feeds: React.FC = () => {
                               >
                                 {getInitials(commentUser.Fullname || commentUser.Username)}
                               </Avatar>
-                              <div className="ml-2 flex-1 flex-wrap">
+                              <div className="ml-2">
                                 <p className="text-sm font-semibold">
                                   {commentUser.Fullname || 'Unknown'}{' '}
                                   <span className="text-xs text-gray-500 ml-2">
