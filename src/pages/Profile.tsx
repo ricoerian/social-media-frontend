@@ -8,6 +8,7 @@ import {
   Avatar,
   message,
   Modal,
+  Flex,
 } from 'antd';
 import moment, { Moment } from 'moment';
 import API from '../api';
@@ -178,12 +179,14 @@ const Profile: React.FC = () => {
               <DatePicker format="YYYY-MM-DD" style={{ width: '100%' }} />
             </Form.Item>
             <Form.Item>
-              <Button type="primary" htmlType="submit" block disabled={uploading} className="text-lg">
-                {uploading ? 'Updating Photo...' : 'Update Profile'}
-              </Button>
-              <Button type="default" onClick={() => setIsPasswordModalOpen(true)} className="text-lg w-full !bg-red-500">
-                Change Password
-              </Button>
+              <Flex vertical gap={10}>
+                <Button type="primary" htmlType="submit" block disabled={uploading} className="text-lg">
+                  {uploading ? 'Updating Photo...' : 'Update Profile'}
+                </Button>
+                <Button type="default" onClick={() => setIsPasswordModalOpen(true)} className="text-lg w-full !bg-red-500">
+                  Change Password
+                </Button>
+              </Flex>
             </Form.Item>
           </Form>
           {/* Modal Change Password */}
@@ -212,7 +215,7 @@ const Profile: React.FC = () => {
                 <Input.Password placeholder="Masukkan password baru" />
               </Form.Item>
               <Form.Item>
-                <Button type="default" className='!bg-red-500' htmlType="submit" block>
+                <Button type="default" className='!bg-red-500 text-white hover:text-white' htmlType="submit" block>
                   Change Password
                 </Button>
               </Form.Item>
