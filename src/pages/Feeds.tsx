@@ -359,7 +359,7 @@ const Feeds: React.FC = () => {
             editingFeed &&
             setEditingFeed({ ...editingFeed, Feed: e.target.value })
           }
-          className="break-all" // Tambahan
+          className="break-all"
         />
       </Modal>
 
@@ -393,7 +393,9 @@ const Feeds: React.FC = () => {
                 <div className="flex items-center p-4 justify-between">
                   <div className="flex items-center">
                     <Avatar
+                      shape="circle"
                       size={40}
+                      style={{ objectFit: 'cover' }}
                       src={
                         item.User && item.User.PhotoProfile
                           ? `${import.meta.env.VITE_GOLANG_API_BASE_URL}/${item.User.PhotoProfile}`
@@ -404,12 +406,11 @@ const Feeds: React.FC = () => {
                         ? getInitials(item.User.Fullname || item.User.Username)
                         : 'U'}
                     </Avatar>
-                    <div className="ml-4 overflow-hidden"> {/* Tambahan */}
-                      {/* Pastikan nama user tidak overflow */}
-                      <p className="font-semibold text-sm break-all"> {/* Tambahan */}
+                    <div className="ml-4 overflow-hidden">
+                      <p className="font-semibold text-sm break-all">
                         {item.User ? item.User.Fullname : 'Unknown'}
                       </p>
-                      <p className="text-xs text-gray-500 break-all"> {/* Tambahan */}
+                      <p className="text-xs text-gray-500 break-all">
                         {new Date(item.CreatedAt).toLocaleString()}
                       </p>
                     </div>
@@ -442,10 +443,7 @@ const Feeds: React.FC = () => {
                 )}
                 {/* Footer/Aksi */}
                 <div className="p-4">
-                  {/* Pastikan text feed wrap dengan baik */}
-                  <p className="text-sm mb-2 break-all"> {/* Tambahan */}
-                    {item.Feed}
-                  </p>
+                  <p className="text-sm mb-2 break-all">{item.Feed}</p>
                   <div className="flex items-center space-x-4">
                     <Button type="text" onClick={() => handleLike(item.ID)}>
                       {isLiked ? (
@@ -479,7 +477,6 @@ const Feeds: React.FC = () => {
                   {item.Comments && item.Comments.length > 0 && (
                     <div className="mt-4 border-t pt-4">
                       {item.Comments.map((comment) => {
-                        // Pastikan data user komentar ada
                         const commentUser =
                           comment.User && comment.User.Username.trim() !== ''
                             ? comment.User
@@ -492,8 +489,11 @@ const Feeds: React.FC = () => {
                         return (
                           <div key={comment.ID} className="flex flex-col mt-2">
                             <div className="flex items-start">
+                              {/* PERUBAHAN: Style agar avatar komentar tidak gepeng */}
                               <Avatar
+                                shape="circle"
                                 size={30}
+                                style={{ objectFit: 'cover' }} // PERUBAHAN
                                 src={
                                   commentUser.PhotoProfile
                                     ? `${import.meta.env.VITE_GOLANG_API_BASE_URL}/${commentUser.PhotoProfile}`
@@ -504,8 +504,8 @@ const Feeds: React.FC = () => {
                                   commentUser.Fullname || commentUser.Username
                                 )}
                               </Avatar>
-                              <div className="ml-2 overflow-hidden"> {/* Tambahan */}
-                                <p className="text-sm font-semibold break-all"> {/* Tambahan */}
+                              <div className="ml-2 overflow-hidden">
+                                <p className="text-sm font-semibold break-all">
                                   {commentUser.Fullname || 'Unknown'}{' '}
                                   <span className="text-xs text-gray-500 ml-2">
                                     {new Date(comment.CreatedAt).toLocaleString()}
@@ -525,7 +525,7 @@ const Feeds: React.FC = () => {
                                           [comment.ID]: e.target.value,
                                         }))
                                       }
-                                      className="break-all" // Tambahan
+                                      className="break-all"
                                     />
                                     <Button onClick={() => handleUpdateComment(comment.ID)}>
                                       Simpan
@@ -538,10 +538,7 @@ const Feeds: React.FC = () => {
                                     </Button>
                                   </div>
                                 ) : (
-                                  // Pastikan komentar tidak overflow
-                                  <p className="text-sm break-all"> {/* Tambahan */}
-                                    {comment.Comment}
-                                  </p>
+                                  <p className="text-sm break-all">{comment.Comment}</p>
                                 )}
                               </div>
                               {/* Tombol edit & hapus komentar */}
