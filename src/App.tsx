@@ -6,6 +6,7 @@ import Feeds from './pages/Feeds';
 import Chat from './pages/Chat';
 import Profile from './pages/Profile';
 import Layout from './components/Layout';
+import SearchUsers from './pages/SearchUsers';
 
 // Komponen RequireAuth untuk proteksi route
 const RequireAuth: React.FC<{ children: JSX.Element }> = ({ children }) => {
@@ -52,6 +53,16 @@ const App: React.FC = () => {
             <RequireAuth>
               <Layout>
                 <Profile />
+              </Layout>
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/search"
+          element={
+            <RequireAuth>
+              <Layout>
+                <SearchUsers />
               </Layout>
             </RequireAuth>
           }

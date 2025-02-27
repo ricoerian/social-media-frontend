@@ -8,6 +8,7 @@ import {
   LogoutOutlined,
   LoginOutlined,
   UserAddOutlined,
+  SearchOutlined,
 } from '@ant-design/icons';
 import { Grid } from 'antd';
 
@@ -36,6 +37,11 @@ const Navbar: React.FC = () => {
           key: 'chat',
           icon: <MessageOutlined />,
           label: <Link to="/chat">Chat</Link>,
+        },
+        {
+          key: 'search',
+          icon: <SearchOutlined />,
+          label: <Link to="/search">Search</Link>,
         },
         {
           key: 'profile',
