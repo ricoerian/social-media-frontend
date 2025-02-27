@@ -36,6 +36,7 @@ interface IMessageItem {
   ID: number;
   Message: string;
   CreatedAt: string;
+  File?: string;
   User: {
     ID: number;
     Username: string;
@@ -51,6 +52,21 @@ const getInitials = (name: string): string => {
   return words.slice(0, 2).map((w) => w.charAt(0).toUpperCase()).join('');
 };
 
+// Helper untuk merender preview file berdasarkan tipe
+const renderFilePreview = (file: File): React.ReactNode => {
+  const url = URL.createObjectURL(file);
+  const fileType = file.type;
+  if (fileType.startsWith('image/')) {
+    return <img src={url} alt="preview" style={{ maxWidth: '200px' }} />;
+  } else if (fileType.startsWith('video/')) {
+    return <video controls src={url} style={{ maxWidth: '200px' }} />;
+  } else if (fileType.startsWith('audio/')) {
+    return <audio controls src={url} />;
+  } else {
+    return <a href={url} download>{file.name}</a>;
+  }
+};
+
 //
 // Komponen Chat untuk Mobile
 //
@@ -64,6 +80,8 @@ interface MobileChatProps {
   user: IUser | null;
   onBack: () => void;
   handleDeleteMessage: (messageID: number) => void;
+  selectedFile: File | null;
+  setSelectedFile: React.Dispatch<React.SetStateAction<File | null>>;
 }
 
 export const MobileChat: React.FC<MobileChatProps> = React.memo(({
@@ -76,104 +94,154 @@ export const MobileChat: React.FC<MobileChatProps> = React.memo(({
   user,
   onBack,
   handleDeleteMessage,
-}) => (
-  <div className="w-full h-[650px] flex flex-col bg-white rounded-2xl mb-10 shadow-lg">
-    <header className="flex items-center p-4 border-b">
-      <Button
-        type="text"
-        icon={<ArrowLeftOutlined />}
-        onClick={onBack}
-        className="mr-2"
-      />
-      <h3 className="text-lg font-semibold text-gray-800">
-        {selectedChatroom
-          ? selectedChatroom.Name ||
-            (selectedChatroom.IsGroup ? 'Group Chat' : 'Direct Chat')
-          : 'Chat'}
-      </h3>
-    </header>
-    <section className="flex-1 overflow-y-auto p-4 bg-gray-50">
-      {messages.length > 0 ? (
-        messages.map((msg) => {
-          const isOwnMessage = msg.User.ID === user?.ID;
-          const senderName = msg.User.Fullname || msg.User.Username;
-          return (
-            <div key={msg.ID} className="mb-4">
-              <div className={`flex items-end ${isOwnMessage ? 'justify-end' : 'justify-start'}`}>
-                {!isOwnMessage && (
-                  <Avatar
-                    className="mr-2"
-                    src={
-                      msg.User.PhotoProfile
-                        ? `${import.meta.env.VITE_GOLANG_API_BASE_URL}/${msg.User.PhotoProfile}`
-                        : undefined
-                    }
-                    style={{ backgroundColor: msg.User.PhotoProfile ? undefined : '#87d068' }}
-                  >
-                    {!msg.User.PhotoProfile && getInitials(senderName)}
-                  </Avatar>
-                )}
-                <div
-                  className={`max-w-xs mx-2 px-3 py-2 rounded-lg ${
-                    isOwnMessage ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-800'
-                  }`}
-                >
-                  <div className="text-sm">{msg.Message}</div>
-                  <div className="text-xs mt-1 text-right flex items-center justify-end gap-2">
-                    <span>{new Date(msg.CreatedAt).toLocaleTimeString()}</span>
-                    {isOwnMessage && (
-                      <Button
-                        type="link"
-                        size="small"
-                        danger
-                        onClick={() => handleDeleteMessage(msg.ID)}
-                      >
-                        Hapus
-                      </Button>
-                    )}
-                  </div>
-                </div>
-                {isOwnMessage && (
-                  <Avatar
-                    className="ml-2"
-                    src={
-                      msg.User.PhotoProfile
-                        ? `${import.meta.env.VITE_GOLANG_API_BASE_URL}/${msg.User.PhotoProfile}`
-                        : undefined
-                    }
-                    style={{ backgroundColor: msg.User.PhotoProfile ? undefined : '#1890ff' }}
-                  >
-                    {!msg.User.PhotoProfile && getInitials(senderName)}
-                  </Avatar>
-                )}
-              </div>
-            </div>
-          );
-        })
-      ) : (
-        <div className="flex items-center justify-center h-full">
-          <p className="text-lg text-gray-500">No messages yet.</p>
-        </div>
-      )}
-      {/* Dummy div untuk auto-scroll */}
-      <div ref={messagesEndRef} />
-    </section>
-    <footer className="px-4 py-3 border-t">
-      <div className="flex flex-col gap-2">
-        <Input.TextArea
-          rows={2}
-          value={newMessage}
-          onChange={(e) => setNewMessage(e.target.value)}
-          placeholder="Type your message..."
-          className="w-full p-2 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-400"
+  selectedFile,
+  setSelectedFile,
+}) => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  return (
+    <div className="w-full h-[650px] flex flex-col bg-white rounded-2xl mb-10 shadow-lg">
+      <header className="flex items-center p-4 border-b">
+        <Button
+          type="text"
+          icon={<ArrowLeftOutlined />}
+          onClick={onBack}
+          className="mr-2"
         />
-        <Button type="primary" onClick={handleSendMessage} className="w-full">
-          Send
-        </Button>
-      </div>
-    </footer>
-  </div>
-));
+        <h3 className="text-lg font-semibold text-gray-800">
+          {selectedChatroom
+            ? selectedChatroom.Name ||
+              (selectedChatroom.IsGroup ? 'Group Chat' : 'Direct Chat')
+            : 'Chat'}
+        </h3>
+      </header>
+      <section className="flex-1 overflow-y-auto p-4 bg-gray-50">
+        {messages.length > 0 ? (
+          messages.map((msg) => {
+            const isOwnMessage = msg.User.ID === user?.ID;
+            const senderName = msg.User.Fullname || msg.User.Username;
+            return (
+              <div key={msg.ID} className="mb-4">
+                <div className={`flex items-end ${isOwnMessage ? 'justify-end' : 'justify-start'}`}>
+                  {!isOwnMessage && (
+                    <Avatar
+                      className="mr-2"
+                      src={
+                        msg.User.PhotoProfile
+                          ? `${import.meta.env.VITE_GOLANG_API_BASE_URL}/${msg.User.PhotoProfile}`
+                          : undefined
+                      }
+                      style={{ backgroundColor: msg.User.PhotoProfile ? undefined : '#87d068' }}
+                    >
+                      {!msg.User.PhotoProfile && getInitials(senderName)}
+                    </Avatar>
+                  )}
+                  <div
+                    className={`max-w-xs mx-2 px-3 py-2 rounded-lg ${
+                      isOwnMessage ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-800'
+                    }`}
+                  >
+                    <div className="text-sm">{msg.Message}</div>
+                    {msg.File && (
+                      <div className="mt-2">
+                        {/* Render file berdasarkan tipe file yang diupload */}
+                        {(() => {
+                          const fileUrl = `${import.meta.env.VITE_GOLANG_API_BASE_URL}/${msg.File}`;
+                          const ext = msg.File.split('.').pop()?.toLowerCase();
+                          const imageExt = ['jpg', 'jpeg', 'png', 'gif', 'bmp'];
+                          const videoExt = ['mp4', 'mov', 'avi', 'mkv'];
+                          const audioExt = ['mp3', 'wav', 'ogg'];
+                          if (ext && imageExt.includes(ext)) {
+                            return <img src={fileUrl} alt="attachment" style={{ maxWidth: '200px' }} />;
+                          } else if (ext && videoExt.includes(ext)) {
+                            return <video controls src={fileUrl} style={{ maxWidth: '200px' }} />;
+                          } else if (ext && audioExt.includes(ext)) {
+                            return <audio controls src={fileUrl} />;
+                          } else {
+                            return <a href={fileUrl} download className="text-blue-500 underline">Download File</a>;
+                          }
+                        })()}
+                      </div>
+                    )}
+                    <div className="text-xs mt-1 text-right flex items-center justify-end gap-2">
+                      <span>{new Date(msg.CreatedAt).toLocaleTimeString()}</span>
+                      {isOwnMessage && (
+                        <Button
+                          type="link"
+                          size="small"
+                          danger
+                          onClick={() => handleDeleteMessage(msg.ID)}
+                        >
+                          Hapus
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                  {isOwnMessage && (
+                    <Avatar
+                      className="ml-2"
+                      src={
+                        msg.User.PhotoProfile
+                          ? `${import.meta.env.VITE_GOLANG_API_BASE_URL}/${msg.User.PhotoProfile}`
+                          : undefined
+                      }
+                      style={{ backgroundColor: msg.User.PhotoProfile ? undefined : '#1890ff' }}
+                    >
+                      {!msg.User.PhotoProfile && getInitials(senderName)}
+                    </Avatar>
+                  )}
+                </div>
+              </div>
+            );
+          })
+        ) : (
+          <div className="flex items-center justify-center h-full">
+            <p className="text-lg text-gray-500">No messages yet.</p>
+          </div>
+        )}
+        {/* Dummy div untuk auto-scroll */}
+        <div ref={messagesEndRef} />
+      </section>
+      <footer className="px-4 py-3 border-t">
+        <div className="flex flex-col gap-2">
+          <Input.TextArea
+            rows={2}
+            value={newMessage}
+            onChange={(e) => setNewMessage(e.target.value)}
+            placeholder="Type your message..."
+            className="w-full p-2 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-400"
+          />
+          {selectedFile && (
+            <div className="mt-2 flex flex-col items-start">
+              <span className="text-sm font-semibold">File Preview:</span>
+              {renderFilePreview(selectedFile)}
+              <Button type="link" onClick={() => setSelectedFile(null)} className="p-0">
+                Hapus File
+              </Button>
+            </div>
+          )}
+          <div className="flex items-center gap-2">
+            <Button type="default" onClick={() => fileInputRef.current?.click()}>
+              Attach File
+            </Button>
+            <input
+              type="file"
+              ref={fileInputRef}
+              style={{ display: 'none' }}
+              onChange={(e) => {
+                if (e.target.files && e.target.files[0]) {
+                  setSelectedFile(e.target.files[0]);
+                }
+              }}
+            />
+            <Button type="primary" onClick={handleSendMessage} className="w-full">
+              Send
+            </Button>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+});
 
 //
 // Komponen Chat untuk Desktop
@@ -191,6 +259,8 @@ interface DesktopViewProps {
   onSelectChatroom: (chatroom: IChatroom) => void;
   handleDeleteMessage: (messageID: number) => void;
   handleDeleteChatroom: (chatroomID: number) => void;
+  selectedFile: File | null;
+  setSelectedFile: React.Dispatch<React.SetStateAction<File | null>>;
 }
 
 export const DesktopView: React.FC<DesktopViewProps> = React.memo(({
@@ -206,7 +276,10 @@ export const DesktopView: React.FC<DesktopViewProps> = React.memo(({
   onSelectChatroom,
   handleDeleteMessage,
   handleDeleteChatroom,
+  selectedFile,
+  setSelectedFile,
 }) => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const ChatroomList = () => (
     <List
       itemLayout="horizontal"
@@ -289,6 +362,26 @@ export const DesktopView: React.FC<DesktopViewProps> = React.memo(({
                       }`}
                     >
                       <div className="text-sm">{msg.Message}</div>
+                      {msg.File && (
+                        <div className="mt-2">
+                          {(() => {
+                            const fileUrl = `${import.meta.env.VITE_GOLANG_API_BASE_URL}/${msg.File}`;
+                            const ext = msg.File.split('.').pop()?.toLowerCase();
+                            const imageExt = ['jpg', 'jpeg', 'png', 'gif', 'bmp'];
+                            const videoExt = ['mp4', 'mov', 'avi', 'mkv'];
+                            const audioExt = ['mp3', 'wav', 'ogg'];
+                            if (ext && imageExt.includes(ext)) {
+                              return <img src={fileUrl} alt="attachment" style={{ maxWidth: '200px' }} />;
+                            } else if (ext && videoExt.includes(ext)) {
+                              return <video controls src={fileUrl} style={{ maxWidth: '200px' }} />;
+                            } else if (ext && audioExt.includes(ext)) {
+                              return <audio controls src={fileUrl} />;
+                            } else {
+                              return <a href={fileUrl} download className="text-blue-500 underline">Download File</a>;
+                            }
+                          })()}
+                        </div>
+                      )}
                       <div className="text-xs mt-1 text-right flex items-center justify-end gap-2">
                         <span>{new Date(msg.CreatedAt).toLocaleTimeString()}</span>
                         {isOwnMessage && (
@@ -325,11 +418,10 @@ export const DesktopView: React.FC<DesktopViewProps> = React.memo(({
               <p className="text-xl text-gray-500">Select a chatroom to view messages</p>
             </div>
           )}
-          {/* Dummy div untuk auto-scroll */}
           <div ref={messagesEndRef} />
         </section>
         <footer className="px-4 py-3 border-t bg-white rounded-br-2xl">
-          <div className="flex flex-row items-center gap-2">
+          <div className="flex flex-col gap-2">
             <Input.TextArea
               rows={2}
               value={newMessage}
@@ -337,9 +429,33 @@ export const DesktopView: React.FC<DesktopViewProps> = React.memo(({
               placeholder="Type your message..."
               className="w-full p-2 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-400"
             />
-            <Button type="primary" onClick={handleSendMessage} className="whitespace-nowrap">
-              Send
-            </Button>
+            {selectedFile && (
+              <div className="mt-2 flex flex-col items-start">
+                <span className="text-sm font-semibold">File Preview:</span>
+                {renderFilePreview(selectedFile)}
+                <Button type="link" onClick={() => setSelectedFile(null)} className="p-0">
+                  Hapus File
+                </Button>
+              </div>
+            )}
+            <div className="flex flex-row items-center gap-2">
+              <Button type="default" onClick={() => fileInputRef.current?.click()}>
+                Attach File
+              </Button>
+              <input
+                type="file"
+                ref={fileInputRef}
+                style={{ display: 'none' }}
+                onChange={(e) => {
+                  if (e.target.files && e.target.files[0]) {
+                    setSelectedFile(e.target.files[0]);
+                  }
+                }}
+              />
+              <Button type="primary" onClick={handleSendMessage} className="whitespace-nowrap">
+                Send
+              </Button>
+            </div>
           </div>
         </footer>
       </main>
@@ -359,6 +475,7 @@ const Chat: React.FC = () => {
   const [selectedChatroom, setSelectedChatroom] = useState<IChatroom | null>(null);
   const [messages, setMessages] = useState<IMessageItem[]>([]);
   const [newMessage, setNewMessage] = useState<string>('');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   // Modal state untuk membuat chatroom baru
   const [newChatModalVisible, setNewChatModalVisible] = useState<boolean>(false);
@@ -420,18 +537,22 @@ const Chat: React.FC = () => {
       return;
     }
     const trimmedMessage = newMessage.trim();
-    if (trimmedMessage.length === 0) {
+    if (trimmedMessage.length === 0 && !selectedFile) {
       message.error('Message cannot be empty.');
       return;
     }
     try {
       const formData = new FormData();
       formData.append('message', trimmedMessage);
+      if (selectedFile) {
+        formData.append('file', selectedFile);
+      }
       await API.post(`/chatrooms/${selectedChatroom.ID}/messages`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       await fetchMessages(selectedChatroom.ID);
       setNewMessage('');
+      setSelectedFile(null);
     } catch (error: unknown) {
       if (axios.isAxiosError(error) && error.response) {
         message.error(error.response.data?.error || 'Failed to send message');
@@ -457,7 +578,6 @@ const Chat: React.FC = () => {
     try {
       await API.delete(`/chatrooms/${chatroomID}`);
       message.success('Chatroom deleted successfully');
-      // Jika chatroom yang dihapus sedang dipilih, reset selectedChatroom
       if (selectedChatroom && selectedChatroom.ID === chatroomID) {
         setSelectedChatroom(null);
         setMessages([]);
@@ -580,6 +700,8 @@ const Chat: React.FC = () => {
             user={user}
             onBack={() => setSelectedChatroom(null)}
             handleDeleteMessage={handleDeleteMessage}
+            selectedFile={selectedFile}
+            setSelectedFile={setSelectedFile}
           />
         ) : (
           <MobileSidebar />
@@ -598,6 +720,8 @@ const Chat: React.FC = () => {
           onSelectChatroom={handleSelectChatroom}
           handleDeleteMessage={handleDeleteMessage}
           handleDeleteChatroom={handleDeleteChatroom}
+          selectedFile={selectedFile}
+          setSelectedFile={setSelectedFile}
         />
       )}
 
