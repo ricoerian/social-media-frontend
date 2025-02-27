@@ -197,7 +197,7 @@ const Feeds: React.FC = () => {
           shape="circle"
           icon={<PlusOutlined />}
           size="large"
-          className="fixed bottom-16 right-4 md:bottom-4 z-50 shadow-lg"
+          className="fixed !bottom-16 right-4 md:!bottom-4 z-50 shadow-lg"
           onClick={() => setIsModalVisible(true)}
         />
       )}
