@@ -99,7 +99,7 @@ const renderMedia = (filePath: string): React.ReactNode => {
   } else {
     return (
       <a href={url} download className="text-blue-500 ml-4 underline block">
-        {filePath}
+        {filePath.replace('public/uploads/', '')}
       </a>
     );
   }
