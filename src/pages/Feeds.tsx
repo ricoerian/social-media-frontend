@@ -395,6 +395,7 @@ const Feeds: React.FC = () => {
                     <Avatar
                       shape="circle"
                       size={40}
+                      className='!object-cover'
                       style={{ objectFit: 'cover' }}
                       src={
                         item.User && item.User.PhotoProfile
