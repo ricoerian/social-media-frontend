@@ -52,7 +52,7 @@ interface FeedUser {
   PhotoProfile: string;
 }
 
-interface CommentItem {
+export interface CommentItem {
   ID: number;
   Comment: string;
   FeedID: number;
@@ -164,7 +164,9 @@ const Feeds: React.FC = () => {
   const [commentValues, setCommentValues] = useState<{ [key: number]: string }>({});
   const [editingFeed, setEditingFeed] = useState<FeedItem | null>(null);
   const [isEditFeedModalVisible, setIsEditFeedModalVisible] = useState<boolean>(false);
-  const [editingComments, setEditingComments] = useState<{ [commentId: number]: string }>({});
+  // Modal edit comment state
+  const [editingComment, setEditingComment] = useState<CommentItem | null>(null);
+  const [isEditCommentModalVisible, setIsEditCommentModalVisible] = useState<boolean>(false);
   const [showAllComments, setShowAllComments] = useState<{ [feedId: number]: boolean }>({});
 
   const fetchFeeds = async (): Promise<void> => {
@@ -282,25 +284,21 @@ const Feeds: React.FC = () => {
     }
   };
 
-  const startEditComment = (comment: CommentItem) => {
-    setEditingComments((prev) => ({ ...prev, [comment.ID]: comment.Comment }));
+  // Modal edit comment functions
+  const openEditCommentModal = (comment: CommentItem) => {
+    setEditingComment(comment);
+    setIsEditCommentModalVisible(true);
   };
 
-  const cancelEditComment = (commentID: number) => {
-    setEditingComments((prev) => {
-      const newState = { ...prev };
-      delete newState[commentID];
-      return newState;
-    });
-  };
-
-  const handleUpdateComment = async (commentID: number) => {
+  const handleUpdateCommentModal = async () => {
+    if (!editingComment) return;
     try {
-      await API.put(`/comments/${commentID}`, {
-        comment: editingComments[commentID],
+      await API.put(`/comments/${editingComment.ID}`, {
+        comment: editingComment.Comment,
       });
       message.success('Komentar berhasil diupdate');
-      cancelEditComment(commentID);
+      setIsEditCommentModalVisible(false);
+      setEditingComment(null);
       fetchFeeds();
     } catch (error: unknown) {
       const err = error as { response?: { data?: { error?: string } } };
@@ -321,6 +319,7 @@ const Feeds: React.FC = () => {
 
   return (
     <div className="container mx-auto">
+      {/* Modal untuk membuat Feed */}
       <Modal
         title="Buat Feed Baru"
         visible={isModalVisible}
@@ -380,6 +379,7 @@ const Feeds: React.FC = () => {
         </Form>
       </Modal>
 
+      {/* Modal untuk edit Feed */}
       <Modal
         title="Edit Feed"
         visible={isEditFeedModalVisible}
@@ -398,6 +398,28 @@ const Feeds: React.FC = () => {
           className="break-all"
         />
       </Modal>
+
+      {/* Modal untuk edit Comment */}
+      <Modal
+        title="Edit Komentar"
+        visible={isEditCommentModalVisible}
+        onCancel={() => {
+          setIsEditCommentModalVisible(false);
+          setEditingComment(null);
+        }}
+        onOk={handleUpdateCommentModal}
+      >
+        <Input.TextArea
+          rows={4}
+          value={editingComment?.Comment}
+          onChange={(e) =>
+            editingComment &&
+            setEditingComment({ ...editingComment, Comment: e.target.value })
+          }
+          className="break-all"
+        />
+      </Modal>
+
       {user && (
         <Button
           type="primary"
@@ -408,6 +430,7 @@ const Feeds: React.FC = () => {
           onClick={() => setIsModalVisible(true)}
         />
       )}
+
       <List
         dataSource={feeds}
         renderItem={(item: FeedItem) => {
@@ -421,7 +444,19 @@ const Feeds: React.FC = () => {
 
           return (
             <List.Item key={item.ID} className="mb-6">
-              <div className="bg-white border border-gray-200 rounded-lg shadow-sm w-full md:w-3/4 lg:w-2/3 mx-auto">
+              {/* Bungkus feed dengan container relative */}
+              <div className="relative bg-white border border-gray-200 rounded-lg shadow-sm w-full md:w-3/4 lg:w-2/3 mx-auto">
+                {/* Tombol delete (dan edit) ditempatkan di pojok kanan atas */}
+                {user && item.User?.ID === user.ID && (
+                  <div className="absolute top-0 right-0 p-2 flex flex-col gap-1">
+                    <Button type="link" onClick={() => openEditFeedModal(item)}>
+                      Edit
+                    </Button>
+                    <Button type="link" danger onClick={() => handleDeleteFeed(item.ID)}>
+                      Hapus
+                    </Button>
+                  </div>
+                )}
                 <div className="flex p-4 justify-between items-start">
                   <div className="flex items-start space-x-3">
                     {renderUserAvatar(item.User?.PhotoProfile, item.User?.Fullname, 40)}
@@ -429,7 +464,7 @@ const Feeds: React.FC = () => {
                       <p className="font-semibold text-sm break-all">
                         {item.User ? item.User.Fullname : 'Unknown'}{' '}
                         {item.User?.ID === 1 && (
-                          <CheckCircleTwoTone className='!mt-1' style={{ marginLeft: 4 }} />
+                          <CheckCircleTwoTone className="!mt-1" style={{ marginLeft: 4 }} />
                         )}
                       </p>
                       <p className="text-xs text-gray-500 break-all">
@@ -437,16 +472,6 @@ const Feeds: React.FC = () => {
                       </p>
                     </div>
                   </div>
-                  {user && item.User?.ID === user.ID && (
-                    <div className="flex-shrink-0">
-                      <Button type="link" onClick={() => openEditFeedModal(item)}>
-                        Edit
-                      </Button>
-                      <Button type="link" danger onClick={() => handleDeleteFeed(item.ID)}>
-                        Hapus
-                      </Button>
-                    </div>
-                  )}
                 </div>
 
                 {filePaths.length > 0 && (
@@ -470,9 +495,9 @@ const Feeds: React.FC = () => {
                   <div className="flex items-center space-x-4">
                     <Button type="text" onClick={() => handleLike(item.ID)}>
                       {isLiked ? (
-                        <HeartFilled className="!text-red-500" />
+                        <HeartFilled className="text-red-500" />
                       ) : (
-                        <HeartOutlined className="!text-red-500" />
+                        <HeartOutlined className="text-red-500" />
                       )}
                       <span className="ml-1 text-sm">{likeCount}</span>
                     </Button>
@@ -497,6 +522,7 @@ const Feeds: React.FC = () => {
                       </Button>
                     </div>
                   )}
+
                   {item.Comments && item.Comments.length > 0 && (
                     <div className="mt-4 border-t pt-4">
                       {(showAllComments[item.ID]
@@ -513,13 +539,9 @@ const Feeds: React.FC = () => {
                                 Fullname: '',
                               };
 
-                        const isEditing = Object.prototype.hasOwnProperty.call(
-                          editingComments,
-                          comment.ID
-                        );
-
                         return (
-                          <div key={comment.ID} className="mt-2">
+                          // Bungkus comment dengan container relative
+                          <div key={comment.ID} className="mt-2 relative">
                             <div className="flex items-start space-x-2">
                               {renderUserAvatar(
                                 commentUser.PhotoProfile,
@@ -530,58 +552,31 @@ const Feeds: React.FC = () => {
                                 <p className="text-sm font-semibold break-all">
                                   {commentUser.Fullname || 'Unknown'}{' '}
                                   {commentUser.ID === 1 && (
-                                    <CheckCircleTwoTone className='!mt-1' style={{ marginLeft: 4 }} />
+                                    <CheckCircleTwoTone className="!mt-1" style={{ marginLeft: 4 }} />
                                   )}
                                   <span className="text-xs text-gray-500 ml-2">
                                     {new Date(comment.CreatedAt).toLocaleString()}
                                   </span>
                                 </p>
-                                {isEditing ? (
-                                  <div className="!w-full flex items-center gap-2">
-                                    <Input
-                                      value={editingComments[comment.ID]}
-                                      maxLength={1000}
-                                      onChange={(e) =>
-                                        setEditingComments((prev) => ({
-                                          ...prev,
-                                          [comment.ID]: e.target.value,
-                                        }))
-                                      }
-                                      className="break-all"
-                                    />
-                                    <Button onClick={() => handleUpdateComment(comment.ID)}>
-                                      Simpan
-                                    </Button>
-                                    <Button onClick={() => cancelEditComment(comment.ID)} danger>
-                                      Batal
-                                    </Button>
-                                  </div>
-                                ) : (
-                                  <p className="text-sm break-all">
-                                    <TruncatedText
-                                      text={comment.Comment}
-                                      maxLength={100}
-                                    />
-                                  </p>
-                                )}
+                                <p className="text-sm break-all">
+                                  {comment.Comment}
+                                </p>
                               </div>
-                              {user && commentUser.ID === user.ID && (
-                                <div className="ml-2 flex-shrink-0">
-                                  {!isEditing && (
-                                    <Button type="link" onClick={() => startEditComment(comment)}>
-                                      Edit
-                                    </Button>
-                                  )}
-                                  <Button
-                                    type="link"
-                                    danger
-                                    onClick={() => handleDeleteComment(comment.ID)}
-                                  >
-                                    Hapus
-                                  </Button>
-                                </div>
-                              )}
                             </div>
+                            {user && commentUser.ID === user.ID && (
+                              <div className="absolute top-0 right-0 p-1">
+                                <Button type="link" onClick={() => openEditCommentModal(comment)}>
+                                  Edit
+                                </Button>
+                                <Button
+                                  type="link"
+                                  danger
+                                  onClick={() => handleDeleteComment(comment.ID)}
+                                >
+                                  Hapus
+                                </Button>
+                              </div>
+                            )}
                           </div>
                         );
                       })}
