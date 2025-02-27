@@ -523,7 +523,7 @@ const Feeds: React.FC = () => {
                                   </Button>
                                 )}
                                 {user &&
-                                  (commentUser.ID === user.ID || item.User?.ID === user.ID) && (
+                                  (commentUser.ID === user.ID) && (
                                     <Button
                                       type="link"
                                       danger
