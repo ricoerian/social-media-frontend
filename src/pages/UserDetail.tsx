@@ -1,7 +1,6 @@
-// src/pages/UserDetail.tsx
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { Avatar, Button, List, message, Grid } from 'antd';
+import { Avatar, Button, List, message, Grid, Carousel } from 'antd';
 import API from '../api';
 
 interface IUser {
@@ -32,8 +31,9 @@ const UserDetail: React.FC = () => {
   const baseUrl = import.meta.env.VITE_GOLANG_API_BASE_URL;
   const { useBreakpoint } = Grid;
   const screens = useBreakpoint();
-  const avatarSize = screens.sm ? 200 : 80;
+  const avatarSize = screens.sm ? 200 : 100;
 
+  // Ambil detail user dari endpoint /users
   useEffect(() => {
     const fetchUserDetail = async () => {
       try {
@@ -100,6 +100,40 @@ const UserDetail: React.FC = () => {
     }
   };
 
+  // Fungsi untuk merender media (gambar, video, audio, atau link download)
+  const renderMedia = (filePath: string): React.ReactNode => {
+    const fileUrl = `${baseUrl}/${filePath}`;
+    const ext = filePath.split('.').pop()?.toLowerCase();
+    const imageExt = ['jpg', 'jpeg', 'png', 'gif', 'bmp'];
+    const videoExt = ['mp4', 'mov', 'avi', 'mkv'];
+    const audioExt = ['mp3', 'wav', 'ogg'];
+    if (ext && imageExt.includes(ext)) {
+      return (
+        <img
+          src={fileUrl}
+          alt="attachment"
+          className="object-cover rounded w-full max-h-80"
+        />
+      );
+    } else if (ext && videoExt.includes(ext)) {
+      return (
+        <video
+          controls
+          src={fileUrl}
+          className="object-cover rounded w-full max-h-80"
+        />
+      );
+    } else if (ext && audioExt.includes(ext)) {
+      return <audio controls src={fileUrl} className="w-full" />;
+    } else {
+      return (
+        <a href={fileUrl} download className="text-blue-500 underline">
+          Download File
+        </a>
+      );
+    }
+  };
+
   if (!userDetail) {
     return <p>Loading...</p>;
   }
@@ -117,8 +151,8 @@ const UserDetail: React.FC = () => {
           </Avatar>
         </div>
         <div className="mt-4 md:mt-0 text-center md:text-left">
-          <h2 className="text-2xl font-bold !m-0">{userDetail.Fullname}</h2>
-          <p className="text-gray-500 !m-0">@{userDetail.Username}</p>
+          <h2 className="text-2xl font-bold">{userDetail.Fullname}</h2>
+          <p className="text-gray-500">@{userDetail.Username}</p>
           <div className="mt-2">
             {isFollowing ? (
               <Button type="primary" danger onClick={handleUnfollow}>
@@ -139,52 +173,36 @@ const UserDetail: React.FC = () => {
         {feeds.length > 0 ? (
           <List
             dataSource={feeds}
-            renderItem={(feed) => (
-              <List.Item key={feed.ID} className="mb-6">
-                <div className="bg-white border border-gray-200 rounded-lg shadow-sm w-full p-4">
-                  <p className="text-sm mb-2">{feed.Feed}</p>
-                  {feed.File && (
-                    <div className="w-full">
-                      {(() => {
-                        const fileUrl = `${baseUrl}/${feed.File}`;
-                        const ext = feed.File.split('.').pop()?.toLowerCase();
-                        const imageExt = ['jpg', 'jpeg', 'png', 'gif', 'bmp'];
-                        const videoExt = ['mp4', 'mov', 'avi', 'mkv'];
-                        const audioExt = ['mp3', 'wav', 'ogg'];
-                        if (ext && imageExt.includes(ext)) {
-                          return (
-                            <img
-                              src={fileUrl}
-                              alt="attachment"
-                              className="object-cover rounded w-full max-h-80"
-                            />
-                          );
-                        } else if (ext && videoExt.includes(ext)) {
-                          return (
-                            <video
-                              controls
-                              src={fileUrl}
-                              className="object-cover rounded w-full max-h-80"
-                            />
-                          );
-                        } else if (ext && audioExt.includes(ext)) {
-                          return <audio controls src={fileUrl} className="w-full" />;
-                        } else {
-                          return (
-                            <a href={fileUrl} download className="text-blue-500 underline">
-                              Download File
-                            </a>
-                          );
-                        }
-                      })()}
+            renderItem={(feed) => {
+              const filePaths = feed.File
+                ? feed.File.split(',').filter((path) => path.trim() !== '')
+                : [];
+              return (
+                <List.Item key={feed.ID} className="mb-6">
+                  <div className="bg-white border border-gray-200 rounded-lg shadow-sm w-full p-4">
+                    <p className="text-sm mb-2">{feed.Feed}</p>
+                    {filePaths.length > 0 && (
+                      <div className="w-full">
+                        {filePaths.length === 1 ? (
+                          renderMedia(filePaths[0])
+                        ) : (
+                          <Carousel dotPosition="bottom" draggable adaptiveHeight>
+                            {filePaths.map((path, idx) => (
+                              <div key={idx}>
+                                {renderMedia(path)}
+                              </div>
+                            ))}
+                          </Carousel>
+                        )}
+                      </div>
+                    )}
+                    <div className="text-xs text-gray-500 mt-2">
+                      {new Date(feed.CreatedAt).toLocaleString()}
                     </div>
-                  )}
-                  <div className="text-xs text-gray-500 mt-2">
-                    {new Date(feed.CreatedAt).toLocaleString()}
                   </div>
-                </div>
-              </List.Item>
-            )}
+                </List.Item>
+              );
+            }}
           />
         ) : (
           <p>User ini belum membuat feed.</p>
