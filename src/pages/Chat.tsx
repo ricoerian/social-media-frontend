@@ -63,6 +63,7 @@ interface MobileChatProps {
   messagesEndRef: React.RefObject<HTMLDivElement>;
   user: IUser | null;
   onBack: () => void;
+  handleDeleteMessage: (messageID: number) => void;
 }
 
 export const MobileChat: React.FC<MobileChatProps> = React.memo(({
@@ -74,6 +75,7 @@ export const MobileChat: React.FC<MobileChatProps> = React.memo(({
   messagesEndRef,
   user,
   onBack,
+  handleDeleteMessage,
 }) => (
   <div className="w-full h-[650px] flex flex-col bg-white rounded-2xl mb-10 shadow-lg">
     <header className="flex items-center p-4 border-b">
@@ -96,46 +98,55 @@ export const MobileChat: React.FC<MobileChatProps> = React.memo(({
           const isOwnMessage = msg.User.ID === user?.ID;
           const senderName = msg.User.Fullname || msg.User.Username;
           return (
-            <div
-              key={msg.ID}
-              className={`mb-4 flex items-end ${isOwnMessage ? 'justify-end' : 'justify-start'}`}
-            >
-              {!isOwnMessage && (
-                <Avatar
-                  className="mr-2"
-                  src={
-                    msg.User.PhotoProfile
-                      ? `${import.meta.env.VITE_GOLANG_API_BASE_URL}/${msg.User.PhotoProfile}`
-                      : undefined
-                  }
-                  style={{ backgroundColor: msg.User.PhotoProfile ? undefined : '#87d068' }}
+            <div key={msg.ID} className="mb-4">
+              <div className={`flex items-end ${isOwnMessage ? 'justify-end' : 'justify-start'}`}>
+                {!isOwnMessage && (
+                  <Avatar
+                    className="mr-2"
+                    src={
+                      msg.User.PhotoProfile
+                        ? `${import.meta.env.VITE_GOLANG_API_BASE_URL}/${msg.User.PhotoProfile}`
+                        : undefined
+                    }
+                    style={{ backgroundColor: msg.User.PhotoProfile ? undefined : '#87d068' }}
+                  >
+                    {!msg.User.PhotoProfile && getInitials(senderName)}
+                  </Avatar>
+                )}
+                <div
+                  className={`max-w-xs mx-2 px-3 py-2 rounded-lg ${
+                    isOwnMessage ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-800'
+                  }`}
                 >
-                  {!msg.User.PhotoProfile && getInitials(senderName)}
-                </Avatar>
-              )}
-              <div
-                className={`max-w-xs mx-2 px-3 py-2 rounded-lg ${
-                  isOwnMessage ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-800'
-                }`}
-              >
-                <div className="text-sm">{msg.Message}</div>
-                <div className="text-xs mt-1 text-right">
-                  {new Date(msg.CreatedAt).toLocaleTimeString()}
+                  <div className="text-sm">{msg.Message}</div>
+                  <div className="text-xs mt-1 text-right flex items-center justify-end gap-2">
+                    <span>{new Date(msg.CreatedAt).toLocaleTimeString()}</span>
+                    {isOwnMessage && (
+                      <Button
+                        type="link"
+                        size="small"
+                        danger
+                        onClick={() => handleDeleteMessage(msg.ID)}
+                      >
+                        Hapus
+                      </Button>
+                    )}
+                  </div>
                 </div>
+                {isOwnMessage && (
+                  <Avatar
+                    className="ml-2"
+                    src={
+                      msg.User.PhotoProfile
+                        ? `${import.meta.env.VITE_GOLANG_API_BASE_URL}/${msg.User.PhotoProfile}`
+                        : undefined
+                    }
+                    style={{ backgroundColor: msg.User.PhotoProfile ? undefined : '#1890ff' }}
+                  >
+                    {!msg.User.PhotoProfile && getInitials(senderName)}
+                  </Avatar>
+                )}
               </div>
-              {isOwnMessage && (
-                <Avatar
-                  className="ml-2"
-                  src={
-                    msg.User.PhotoProfile
-                      ? `${import.meta.env.VITE_GOLANG_API_BASE_URL}/${msg.User.PhotoProfile}`
-                      : undefined
-                  }
-                  style={{ backgroundColor: msg.User.PhotoProfile ? undefined : '#1890ff' }}
-                >
-                  {!msg.User.PhotoProfile && getInitials(senderName)}
-                </Avatar>
-              )}
             </div>
           );
         })
@@ -178,6 +189,8 @@ interface DesktopViewProps {
   chatrooms: IChatroom[];
   onNewChatClick: () => void;
   onSelectChatroom: (chatroom: IChatroom) => void;
+  handleDeleteMessage: (messageID: number) => void;
+  handleDeleteChatroom: (chatroomID: number) => void;
 }
 
 export const DesktopView: React.FC<DesktopViewProps> = React.memo(({
@@ -191,6 +204,8 @@ export const DesktopView: React.FC<DesktopViewProps> = React.memo(({
   chatrooms,
   onNewChatClick,
   onSelectChatroom,
+  handleDeleteMessage,
+  handleDeleteChatroom,
 }) => {
   const ChatroomList = () => (
     <List
@@ -202,6 +217,22 @@ export const DesktopView: React.FC<DesktopViewProps> = React.memo(({
           key={room.ID}
           onClick={() => onSelectChatroom(room)}
           className="cursor-pointer p-3 rounded hover:bg-blue-50 transition-colors"
+          actions={
+            room.OwnerID === user?.ID
+              ? [
+                  <Button
+                    type="link"
+                    danger
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteChatroom(room.ID);
+                    }}
+                  >
+                    Hapus
+                  </Button>,
+                ]
+              : []
+          }
         >
           <List.Item.Meta
             title={room.Name || (room.IsGroup ? 'Group Chat' : 'Direct Chat')}
@@ -210,7 +241,7 @@ export const DesktopView: React.FC<DesktopViewProps> = React.memo(({
       )}
     />
   );
-  
+
   return (
     <div className="flex flex-row h-[650px] rounded-2xl shadow-lg">
       <aside className="w-1/3 border-r border-gray-300 p-4 overflow-y-auto bg-white rounded-tl-2xl rounded-bl-2xl">
@@ -237,46 +268,55 @@ export const DesktopView: React.FC<DesktopViewProps> = React.memo(({
               const isOwnMessage = msg.User.ID === user?.ID;
               const senderName = msg.User.Fullname || msg.User.Username;
               return (
-                <div
-                  key={msg.ID}
-                  className={`mb-4 flex items-end ${isOwnMessage ? 'justify-end' : 'justify-start'}`}
-                >
-                  {!isOwnMessage && (
-                    <Avatar
-                      className="mr-2"
-                      src={
-                        msg.User.PhotoProfile
-                          ? `${import.meta.env.VITE_GOLANG_API_BASE_URL}/${msg.User.PhotoProfile}`
-                          : undefined
-                      }
-                      style={{ backgroundColor: msg.User.PhotoProfile ? undefined : '#87d068' }}
+                <div key={msg.ID} className="mb-4">
+                  <div className={`flex items-end ${isOwnMessage ? 'justify-end' : 'justify-start'}`}>
+                    {!isOwnMessage && (
+                      <Avatar
+                        className="mr-2"
+                        src={
+                          msg.User.PhotoProfile
+                            ? `${import.meta.env.VITE_GOLANG_API_BASE_URL}/${msg.User.PhotoProfile}`
+                            : undefined
+                        }
+                        style={{ backgroundColor: msg.User.PhotoProfile ? undefined : '#87d068' }}
+                      >
+                        {!msg.User.PhotoProfile && getInitials(senderName)}
+                      </Avatar>
+                    )}
+                    <div
+                      className={`max-w-md mx-2 px-3 py-2 rounded-lg ${
+                        isOwnMessage ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-800'
+                      }`}
                     >
-                      {!msg.User.PhotoProfile && getInitials(senderName)}
-                    </Avatar>
-                  )}
-                  <div
-                    className={`max-w-md mx-2 px-3 py-2 rounded-lg ${
-                      isOwnMessage ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-800'
-                    }`}
-                  >
-                    <div className="text-sm">{msg.Message}</div>
-                    <div className="text-xs mt-1 text-right">
-                      {new Date(msg.CreatedAt).toLocaleTimeString()}
+                      <div className="text-sm">{msg.Message}</div>
+                      <div className="text-xs mt-1 text-right flex items-center justify-end gap-2">
+                        <span>{new Date(msg.CreatedAt).toLocaleTimeString()}</span>
+                        {isOwnMessage && (
+                          <Button
+                            type="link"
+                            size="small"
+                            danger
+                            onClick={() => handleDeleteMessage(msg.ID)}
+                          >
+                            Hapus
+                          </Button>
+                        )}
+                      </div>
                     </div>
+                    {isOwnMessage && (
+                      <Avatar
+                        className="ml-2"
+                        src={
+                          msg.User.PhotoProfile
+                            ? `${import.meta.env.VITE_GOLANG_API_BASE_URL}/${msg.User.PhotoProfile}`
+                            : undefined
+                        }
+                        style={{ backgroundColor: msg.User.PhotoProfile ? undefined : '#1890ff' }}
+                      >
+                        {!msg.User.PhotoProfile && getInitials(senderName)}
+                      </Avatar>
+                    )}
                   </div>
-                  {isOwnMessage && (
-                    <Avatar
-                      className="ml-2"
-                      src={
-                        msg.User.PhotoProfile
-                          ? `${import.meta.env.VITE_GOLANG_API_BASE_URL}/${msg.User.PhotoProfile}`
-                          : undefined
-                      }
-                      style={{ backgroundColor: msg.User.PhotoProfile ? undefined : '#1890ff' }}
-                    >
-                      {!msg.User.PhotoProfile && getInitials(senderName)}
-                    </Avatar>
-                  )}
                 </div>
               );
             })
@@ -401,6 +441,33 @@ const Chat: React.FC = () => {
     }
   };
 
+  const handleDeleteMessage = async (messageID: number): Promise<void> => {
+    try {
+      await API.delete(`/messages/${messageID}`);
+      message.success('Message deleted successfully');
+      if (selectedChatroom) {
+        fetchMessages(selectedChatroom.ID);
+      }
+    } catch {
+      message.error('Failed to delete message');
+    }
+  };
+
+  const handleDeleteChatroom = async (chatroomID: number): Promise<void> => {
+    try {
+      await API.delete(`/chatrooms/${chatroomID}`);
+      message.success('Chatroom deleted successfully');
+      // Jika chatroom yang dihapus sedang dipilih, reset selectedChatroom
+      if (selectedChatroom && selectedChatroom.ID === chatroomID) {
+        setSelectedChatroom(null);
+        setMessages([]);
+      }
+      fetchChatrooms();
+    } catch {
+      message.error('Failed to delete chatroom');
+    }
+  };
+
   // Auto-generate chatroom name untuk direct chat
   useEffect(() => {
     if (selectedUserIds.length === 1 && user) {
@@ -465,6 +532,22 @@ const Chat: React.FC = () => {
               key={room.ID}
               onClick={() => handleSelectChatroom(room)}
               className="cursor-pointer p-3 rounded hover:bg-blue-50 transition-colors"
+              actions={
+                room.OwnerID === user?.ID
+                  ? [
+                      <Button
+                        type="link"
+                        danger
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteChatroom(room.ID);
+                        }}
+                      >
+                        Hapus
+                      </Button>,
+                    ]
+                  : []
+              }
             >
               <List.Item.Meta
                 title={room.Name || (room.IsGroup ? 'Group Chat' : 'Direct Chat')}
@@ -496,6 +579,7 @@ const Chat: React.FC = () => {
             messagesEndRef={messagesEndRef}
             user={user}
             onBack={() => setSelectedChatroom(null)}
+            handleDeleteMessage={handleDeleteMessage}
           />
         ) : (
           <MobileSidebar />
@@ -512,6 +596,8 @@ const Chat: React.FC = () => {
           chatrooms={chatrooms}
           onNewChatClick={() => setNewChatModalVisible(true)}
           onSelectChatroom={handleSelectChatroom}
+          handleDeleteMessage={handleDeleteMessage}
+          handleDeleteChatroom={handleDeleteChatroom}
         />
       )}
 
