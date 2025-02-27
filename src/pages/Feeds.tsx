@@ -114,6 +114,13 @@ const Feeds: React.FC = () => {
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [commentValues, setCommentValues] = useState<{ [key: number]: string }>({});
 
+  // State untuk edit feed
+  const [editingFeed, setEditingFeed] = useState<FeedItem | null>(null);
+  const [isEditFeedModalVisible, setIsEditFeedModalVisible] = useState<boolean>(false);
+
+  // State untuk edit komentar (mapping: commentID -> new text)
+  const [editingComments, setEditingComments] = useState<{ [commentId: number]: string }>({});
+
   // Ambil feed dari backend
   const fetchFeeds = async (): Promise<void> => {
     try {
@@ -178,7 +185,6 @@ const Feeds: React.FC = () => {
       return;
     }
     try {
-      // Pastikan user terdefinisi dan hanya kirim properti yang diperlukan
       const userData = user
         ? {
             ID: user.ID,
@@ -188,7 +194,6 @@ const Feeds: React.FC = () => {
             PhotoProfile: user.PhotoProfile,
           }
         : null;
-  
       await API.post(`/feeds/${feedId}/comments`, { comment, user: userData });
       message.success('Komentar berhasil dikirim');
       setCommentValues((prev) => ({ ...prev, [feedId]: '' }));
@@ -198,24 +203,76 @@ const Feeds: React.FC = () => {
       message.error(err.response?.data?.error || 'Gagal mengirim komentar');
     }
   };
-  
 
-  console.log(feeds);
+  // --- Fitur Edit & Hapus Feed ---
+  const openEditFeedModal = (feed: FeedItem) => {
+    setEditingFeed(feed);
+    setIsEditFeedModalVisible(true);
+  };
+
+  const handleUpdateFeed = async () => {
+    if (!editingFeed) return;
+    try {
+      await API.put(`/feeds/${editingFeed.ID}`, { feed: editingFeed.Feed });
+      message.success('Feed berhasil diupdate');
+      setEditingFeed(null);
+      setIsEditFeedModalVisible(false);
+      fetchFeeds();
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { error?: string } } };
+      message.error(err.response?.data?.error || 'Gagal mengupdate feed');
+    }
+  };
+
+  const handleDeleteFeed = async (feedID: number) => {
+    try {
+      await API.delete(`/feeds/${feedID}`);
+      message.success('Feed berhasil dihapus');
+      fetchFeeds();
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { error?: string } } };
+      message.error(err.response?.data?.error || 'Gagal menghapus feed');
+    }
+  };
+
+  // --- Fitur Edit & Hapus Komentar ---
+  const startEditComment = (comment: CommentItem) => {
+    setEditingComments((prev) => ({ ...prev, [comment.ID]: comment.Comment }));
+  };
+
+  const cancelEditComment = (commentID: number) => {
+    setEditingComments((prev) => {
+      const newState = { ...prev };
+      delete newState[commentID];
+      return newState;
+    });
+  };
+
+  const handleUpdateComment = async (commentID: number) => {
+    try {
+      await API.put(`/comments/${commentID}`, { comment: editingComments[commentID] });
+      message.success('Komentar berhasil diupdate');
+      cancelEditComment(commentID);
+      fetchFeeds();
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { error?: string } } };
+      message.error(err.response?.data?.error || 'Gagal mengupdate komentar');
+    }
+  };
+
+  const handleDeleteComment = async (commentID: number) => {
+    try {
+      await API.delete(`/comments/${commentID}`);
+      message.success('Komentar berhasil dihapus');
+      fetchFeeds();
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { error?: string } } };
+      message.error(err.response?.data?.error || 'Gagal menghapus komentar');
+    }
+  };
 
   return (
     <div className="container mx-auto">
-      {/* Floating Button untuk membuat feed */}
-      {user && (
-        <Button
-          type="primary"
-          shape="circle"
-          icon={<PlusOutlined />}
-          size="large"
-          className="!fixed bottom-16 right-4 md:bottom-4 z-50 shadow-lg"
-          onClick={() => setIsModalVisible(true)}
-        />
-      )}
-
       {/* Modal Pembuatan Feed */}
       <Modal
         title="Buat Feed Baru"
@@ -261,9 +318,7 @@ const Feeds: React.FC = () => {
                 ) : (
                   <Carousel dotPosition="bottom" draggable adaptiveHeight>
                     {previewUrls.map((url, index) => (
-                      <div key={index}>
-                        {renderMedia(url.split('/').pop()!)}
-                      </div>
+                      <div key={index}>{renderMedia(url.split('/').pop()!)}</div>
                     ))}
                   </Carousel>
                 )}
@@ -277,6 +332,37 @@ const Feeds: React.FC = () => {
           </Form.Item>
         </Form>
       </Modal>
+
+      {/* Modal Edit Feed */}
+      <Modal
+        title="Edit Feed"
+        visible={isEditFeedModalVisible}
+        onCancel={() => {
+          setIsEditFeedModalVisible(false);
+          setEditingFeed(null);
+        }}
+        onOk={handleUpdateFeed}
+      >
+        <Input.TextArea
+          rows={4}
+          value={editingFeed?.Feed}
+          onChange={(e) =>
+            editingFeed && setEditingFeed({ ...editingFeed, Feed: e.target.value })
+          }
+        />
+      </Modal>
+
+      {/* Floating Button untuk membuat feed */}
+      {user && (
+        <Button
+          type="primary"
+          shape="circle"
+          icon={<PlusOutlined />}
+          size="large"
+          className="!fixed bottom-16 right-4 md:bottom-4 z-50 shadow-lg"
+          onClick={() => setIsModalVisible(true)}
+        />
+      )}
 
       {/* List Feed */}
       <List
@@ -293,44 +379,55 @@ const Feeds: React.FC = () => {
             <List.Item key={item.ID} className="mb-6">
               <div className="bg-white border border-gray-200 rounded-lg shadow-sm w-full md:w-3/4 lg:w-2/3 mx-auto">
                 {/* Header */}
-                <div className="flex items-center p-4">
-                <Avatar
-                  size={40}
-                  src={
-                    item.User && item.User.PhotoProfile
-                      ? `${import.meta.env.VITE_GOLANG_API_BASE_URL}/${item.User.PhotoProfile}`
-                      : undefined
-                  }
-                >
-                  {item.User
-                    ? getInitials(item.User.Fullname || item.User.Username)
-                    : 'U'}
-                </Avatar>
-                  <div className="ml-4">
-                    <p className="font-semibold text-sm">
-                      {item.User ? item.User.Username : 'Unknown'}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      {new Date(item.CreatedAt).toLocaleString()}
-                    </p>
+                <div className="flex items-center p-4 justify-between">
+                  <div className="flex items-center">
+                    <Avatar
+                      size={40}
+                      src={
+                        item.User && item.User.PhotoProfile
+                          ? `${import.meta.env.VITE_GOLANG_API_BASE_URL}/${item.User.PhotoProfile}`
+                          : undefined
+                      }
+                    >
+                      {item.User
+                        ? getInitials(item.User.Fullname || item.User.Username)
+                        : 'U'}
+                    </Avatar>
+                    <div className="ml-4">
+                      <p className="font-semibold text-sm">
+                        {item.User ? item.User.Username : 'Unknown'}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {new Date(item.CreatedAt).toLocaleString()}
+                      </p>
+                    </div>
                   </div>
+                  {/* Tombol edit & hapus feed (hanya pemilik feed) */}
+                  {user && item.User?.ID === user.ID && (
+                    <div>
+                      <Button type="link" onClick={() => openEditFeedModal(item)}>
+                        Edit
+                      </Button>
+                      <Button type="link" danger onClick={() => handleDeleteFeed(item.ID)}>
+                        Hapus
+                      </Button>
+                    </div>
+                  )}
                 </div>
                 {/* Konten Post */}
                 {filePaths.length > 0 && (
-                    <div className="w-full">
-                      {filePaths.length === 1 ? (
-                        renderMedia(filePaths[0])
-                      ) : (
-                        <Carousel dotPosition="bottom" draggable adaptiveHeight>
-                          {filePaths.map((filePath, idx) => (
-                            <div key={idx}>
-                              {renderMedia(filePath)}
-                            </div>
-                          ))}
-                        </Carousel>
-                      )}
-                    </div>
-                  )}
+                  <div className="w-full">
+                    {filePaths.length === 1 ? (
+                      renderMedia(filePaths[0])
+                    ) : (
+                      <Carousel dotPosition="bottom" draggable adaptiveHeight>
+                        {filePaths.map((filePath, idx) => (
+                          <div key={idx}>{renderMedia(filePath)}</div>
+                        ))}
+                      </Carousel>
+                    )}
+                  </div>
+                )}
                 {/* Footer/Aksi */}
                 <div className="p-4">
                   <p className="text-sm mb-2">{item.Feed}</p>
@@ -367,30 +464,75 @@ const Feeds: React.FC = () => {
                   {item.Comments && item.Comments.length > 0 && (
                     <div className="mt-4 border-t pt-4">
                       {item.Comments.map((comment) => {
-                        const commentUser = comment.User && comment.User.Username.trim() !== ''
-                          ? comment.User
-                          : { Username: 'Unknown', PhotoProfile: '', Fullname: '' };
-
+                        // Pastikan data user komentar ada
+                        const commentUser =
+                          comment.User && comment.User.Username.trim() !== ''
+                            ? comment.User
+                            : { ID: 0, Username: 'Unknown', PhotoProfile: '', Fullname: '' };
                         return (
-                          <div key={comment.ID} className="flex items-start mt-2">
-                            <Avatar
-                              size={30}
-                              src={
-                                commentUser && commentUser.PhotoProfile
-                                  ? `${import.meta.env.VITE_GOLANG_API_BASE_URL}/${commentUser.PhotoProfile}`
-                                  : undefined
-                              }
-                            >
-                              {getInitials(commentUser.Fullname || commentUser.Username)}
-                            </Avatar>
-                            <div className="ml-2">
-                              <p className="text-sm font-semibold">
-                                {commentUser.Username || 'Unknown'}
-                                <span className="text-xs text-gray-500 ml-2">
-                                  {new Date(comment.CreatedAt).toLocaleString()}
-                                </span>
-                              </p>
-                              <p className="text-sm">{comment.Comment}</p>
+                          <div key={comment.ID} className="flex flex-col mt-2">
+                            <div className="flex items-start">
+                              <Avatar
+                                size={30}
+                                src={
+                                  commentUser.PhotoProfile
+                                    ? `${import.meta.env.VITE_GOLANG_API_BASE_URL}/${commentUser.PhotoProfile}`
+                                    : undefined
+                                }
+                              >
+                                {getInitials(commentUser.Fullname || commentUser.Username)}
+                              </Avatar>
+                              <div className="ml-2 flex-1">
+                                <p className="text-sm font-semibold">
+                                  {commentUser.Username || 'Unknown'}{' '}
+                                  <span className="text-xs text-gray-500 ml-2">
+                                    {new Date(comment.CreatedAt).toLocaleString()}
+                                  </span>
+                                </p>
+                                {/* Jika sedang dalam mode edit komentar */}
+                                {Object.prototype.hasOwnProperty.call(editingComments, comment.ID) ? (
+                                  <div className="flex items-center gap-2">
+                                    <Input
+                                      value={editingComments[comment.ID]}
+                                      onChange={(e) =>
+                                        setEditingComments((prev) => ({
+                                          ...prev,
+                                          [comment.ID]: e.target.value,
+                                        }))
+                                      }
+                                    />
+                                    <Button onClick={() => handleUpdateComment(comment.ID)}>
+                                      Simpan
+                                    </Button>
+                                    <Button
+                                      onClick={() => cancelEditComment(comment.ID)}
+                                      danger
+                                    >
+                                      Batal
+                                    </Button>
+                                  </div>
+                                ) : (
+                                  <p className="text-sm">{comment.Comment}</p>
+                                )}
+                              </div>
+                              {/* Tombol edit & hapus komentar */}
+                              <div className="ml-2">
+                                {user && commentUser.ID === user.ID && !Object.prototype.hasOwnProperty.call(editingComments, comment.ID) && (
+                                  <Button type="link" onClick={() => startEditComment(comment)}>
+                                    Edit
+                                  </Button>
+                                )}
+                                {user &&
+                                  (commentUser.ID === user.ID || item.User?.ID === user.ID) && (
+                                    <Button
+                                      type="link"
+                                      danger
+                                      onClick={() => handleDeleteComment(comment.ID)}
+                                    >
+                                      Hapus
+                                    </Button>
+                                  )}
+                              </div>
                             </div>
                           </div>
                         );
