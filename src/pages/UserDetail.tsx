@@ -184,7 +184,7 @@ const UserDetail: React.FC = () => {
               return (
                 <List.Item key={feed.ID} className="mb-6">
                   <div className="bg-white border border-gray-200 rounded-lg shadow-sm w-full p-4">
-                    <p className="text-sm mb-2">{feed.Feed}</p>
+                    <p className="text-sm mb-2 !break-all">{feed.Feed}</p>
                     {filePaths.length > 0 && (
                       <div className="w-full">
                         {filePaths.length === 1 ? (
