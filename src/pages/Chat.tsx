@@ -11,7 +11,7 @@ import {
   Grid,
   Flex,
 } from 'antd';
-import { ArrowLeftOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, CheckCircleTwoTone } from '@ant-design/icons';
 import API from '../api';
 import { useAuth } from '../hooks/useAuth';
 import axios from 'axios';
@@ -45,14 +45,12 @@ interface IMessageItem {
   };
 }
 
-// Helper: generate inisial dari nama
 const getInitials = (name: string): string => {
   const words = name.split(' ');
   if (words.length === 1) return words[0].charAt(0).toUpperCase();
   return words.slice(0, 2).map((w) => w.charAt(0).toUpperCase()).join('');
 };
 
-// Helper untuk merender preview file berdasarkan tipe
 const renderFilePreview = (file: File): React.ReactNode => {
   const url = URL.createObjectURL(file);
   const fileType = file.type;
@@ -67,9 +65,6 @@ const renderFilePreview = (file: File): React.ReactNode => {
   }
 };
 
-//
-// Komponen Chat untuk Mobile
-//
 interface MobileChatProps {
   messages: IMessageItem[];
   newMessage: string;
@@ -123,17 +118,22 @@ export const MobileChat: React.FC<MobileChatProps> = React.memo(({
               <div key={msg.ID} className="mb-4">
                 <div className={`flex items-end ${isOwnMessage ? 'justify-end' : 'justify-start'}`}>
                   {!isOwnMessage && (
-                    <Avatar
-                      className="mr-2"
-                      src={
-                        msg.User.PhotoProfile
-                          ? `${import.meta.env.VITE_GOLANG_API_BASE_URL}/${msg.User.PhotoProfile}`
-                          : undefined
-                      }
-                      style={{ backgroundColor: msg.User.PhotoProfile ? undefined : '#87d068' }}
-                    >
-                      {!msg.User.PhotoProfile && getInitials(senderName)}
-                    </Avatar>
+                    <>
+                      <Avatar
+                        className="mr-2"
+                        src={
+                          msg.User.PhotoProfile
+                            ? `${import.meta.env.VITE_GOLANG_API_BASE_URL}/${msg.User.PhotoProfile}`
+                            : undefined
+                        }
+                        style={{ backgroundColor: msg.User.PhotoProfile ? undefined : '#87d068' }}
+                      >
+                        {!msg.User.PhotoProfile && getInitials(senderName)}
+                      </Avatar>
+                      {msg.User.ID === 1 && (
+                        <CheckCircleTwoTone twoToneColor="#52c41a" style={{ marginRight: 4 }} />
+                      )}
+                    </>
                   )}
                   <div
                     className={`max-w-xs mx-2 px-3 py-2 rounded-lg ${
@@ -143,7 +143,6 @@ export const MobileChat: React.FC<MobileChatProps> = React.memo(({
                     <div className="text-sm">{msg.Message}</div>
                     {msg.File && (
                       <div className="mt-2">
-                        {/* Render file berdasarkan tipe file yang diupload */}
                         {(() => {
                           const fileUrl = `${import.meta.env.VITE_GOLANG_API_BASE_URL}/${msg.File}`;
                           const ext = msg.File.split('.').pop()?.toLowerCase();
@@ -177,17 +176,22 @@ export const MobileChat: React.FC<MobileChatProps> = React.memo(({
                     </div>
                   </div>
                   {isOwnMessage && (
-                    <Avatar
-                      className="ml-2"
-                      src={
-                        msg.User.PhotoProfile
-                          ? `${import.meta.env.VITE_GOLANG_API_BASE_URL}/${msg.User.PhotoProfile}`
-                          : undefined
-                      }
-                      style={{ backgroundColor: msg.User.PhotoProfile ? undefined : '#1890ff' }}
-                    >
-                      {!msg.User.PhotoProfile && getInitials(senderName)}
-                    </Avatar>
+                    <>
+                      <Avatar
+                        className="ml-2"
+                        src={
+                          msg.User.PhotoProfile
+                            ? `${import.meta.env.VITE_GOLANG_API_BASE_URL}/${msg.User.PhotoProfile}`
+                            : undefined
+                        }
+                        style={{ backgroundColor: msg.User.PhotoProfile ? undefined : '#1890ff' }}
+                      >
+                        {!msg.User.PhotoProfile && getInitials(senderName)}
+                      </Avatar>
+                      {msg.User.ID === 1 && (
+                        <CheckCircleTwoTone twoToneColor="#52c41a" style={{ marginLeft: 4 }} />
+                      )}
+                    </>
                   )}
                 </div>
               </div>
@@ -198,7 +202,6 @@ export const MobileChat: React.FC<MobileChatProps> = React.memo(({
             <p className="text-lg text-gray-500">No messages yet.</p>
           </div>
         )}
-        {/* Dummy div untuk auto-scroll */}
         <div ref={messagesEndRef} />
       </section>
       <footer className="px-4 py-3 border-t">
@@ -244,9 +247,6 @@ export const MobileChat: React.FC<MobileChatProps> = React.memo(({
   );
 });
 
-//
-// Komponen Chat untuk Desktop
-//
 interface DesktopViewProps {
   messages: IMessageItem[];
   newMessage: string;
@@ -345,17 +345,22 @@ export const DesktopView: React.FC<DesktopViewProps> = React.memo(({
                 <div key={msg.ID} className="mb-4">
                   <div className={`flex items-end ${isOwnMessage ? 'justify-end' : 'justify-start'}`}>
                     {!isOwnMessage && (
-                      <Avatar
-                        className="mr-2"
-                        src={
-                          msg.User.PhotoProfile
-                            ? `${import.meta.env.VITE_GOLANG_API_BASE_URL}/${msg.User.PhotoProfile}`
-                            : undefined
-                        }
-                        style={{ backgroundColor: msg.User.PhotoProfile ? undefined : '#87d068' }}
-                      >
-                        {!msg.User.PhotoProfile && getInitials(senderName)}
-                      </Avatar>
+                      <>
+                        <Avatar
+                          className="mr-2"
+                          src={
+                            msg.User.PhotoProfile
+                              ? `${import.meta.env.VITE_GOLANG_API_BASE_URL}/${msg.User.PhotoProfile}`
+                              : undefined
+                          }
+                          style={{ backgroundColor: msg.User.PhotoProfile ? undefined : '#87d068' }}
+                        >
+                          {!msg.User.PhotoProfile && getInitials(senderName)}
+                        </Avatar>
+                        {msg.User.ID === 1 && (
+                          <CheckCircleTwoTone twoToneColor="#52c41a" style={{ marginRight: 4 }} />
+                        )}
+                      </>
                     )}
                     <div
                       className={`max-w-md mx-2 px-3 py-2 rounded-lg ${
@@ -398,17 +403,22 @@ export const DesktopView: React.FC<DesktopViewProps> = React.memo(({
                       </div>
                     </div>
                     {isOwnMessage && (
-                      <Avatar
-                        className="ml-2"
-                        src={
-                          msg.User.PhotoProfile
-                            ? `${import.meta.env.VITE_GOLANG_API_BASE_URL}/${msg.User.PhotoProfile}`
-                            : undefined
-                        }
-                        style={{ backgroundColor: msg.User.PhotoProfile ? undefined : '#1890ff' }}
-                      >
-                        {!msg.User.PhotoProfile && getInitials(senderName)}
-                      </Avatar>
+                      <>
+                        <Avatar
+                          className="ml-2"
+                          src={
+                            msg.User.PhotoProfile
+                              ? `${import.meta.env.VITE_GOLANG_API_BASE_URL}/${msg.User.PhotoProfile}`
+                              : undefined
+                          }
+                          style={{ backgroundColor: msg.User.PhotoProfile ? undefined : '#1890ff' }}
+                        >
+                          {!msg.User.PhotoProfile && getInitials(senderName)}
+                        </Avatar>
+                        {msg.User.ID === 1 && (
+                          <CheckCircleTwoTone twoToneColor="#52c41a" style={{ marginLeft: 4 }} />
+                        )}
+                      </>
                     )}
                   </div>
                 </div>
@@ -464,30 +474,21 @@ export const DesktopView: React.FC<DesktopViewProps> = React.memo(({
   );
 });
 
-//
-// Komponen Chat Utama
-//
 const Chat: React.FC = () => {
   const { user } = useAuth();
   const screens = useBreakpoint();
   const isMobile = !screens.md;
-
   const [chatrooms, setChatrooms] = useState<IChatroom[]>([]);
   const [selectedChatroom, setSelectedChatroom] = useState<IChatroom | null>(null);
   const [messages, setMessages] = useState<IMessageItem[]>([]);
   const [newMessage, setNewMessage] = useState<string>('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-
-  // Modal state untuk membuat chatroom baru
   const [newChatModalVisible, setNewChatModalVisible] = useState<boolean>(false);
   const [availableUsers, setAvailableUsers] = useState<IUser[]>([]);
   const [selectedUserIds, setSelectedUserIds] = useState<number[]>([]);
   const [chatroomName, setChatroomName] = useState<string>('');
-
-  // Ref untuk auto scroll
   const messagesEndRef = useRef<HTMLDivElement>(null!);
 
-  // --- API Calls ---
   const fetchChatrooms = async (): Promise<void> => {
     try {
       const res = await API.get('/chatrooms');
@@ -521,12 +522,10 @@ const Chat: React.FC = () => {
     fetchAvailableUsers();
   }, [user]);
 
-  // Auto scroll ke pesan paling bawah setiap kali messages berubah
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // --- Event Handlers ---
   const handleSelectChatroom = (chatroom: IChatroom): void => {
     setSelectedChatroom(chatroom);
     fetchMessages(chatroom.ID);
@@ -589,7 +588,6 @@ const Chat: React.FC = () => {
     }
   };
 
-  // Auto-generate chatroom name untuk direct chat
   useEffect(() => {
     if (selectedUserIds.length === 1 && user) {
       const recipient = availableUsers.find((u) => u.ID === selectedUserIds[0]);
@@ -638,7 +636,6 @@ const Chat: React.FC = () => {
     }
   };
 
-  // Komponen daftar chatroom untuk Mobile
   const MobileSidebar = () => (
     <div className="w-full overflow-y-auto p-4 bg-white rounded-2xl mb-10 shadow-lg">
       <h2 className="text-2xl font-bold text-gray-800 mb-4">Chatrooms</h2>
