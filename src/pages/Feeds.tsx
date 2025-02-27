@@ -20,25 +20,16 @@ import {
 import API from '../api';
 import { useAuth } from '../hooks/useAuth';
 
-// --------------------------
-// Komponen TruncatedText
-// --------------------------
-/**
- * Komponen untuk memotong teks jika terlalu panjang.
- * Akan menampilkan "Lihat selengkapnya" jika teks melebihi maxLength.
- */
 const TruncatedText: React.FC<{
   text: string;
   maxLength?: number;
 }> = ({ text, maxLength = 100 }) => {
   const [expanded, setExpanded] = useState(false);
 
-  // Jika teks lebih pendek dari maxLength, tampilkan apa adanya.
   if (text.length <= maxLength) {
     return <span>{text}</span>;
   }
 
-  // Jika teks lebih panjang, cek apakah sedang expanded atau tidak.
   return (
     <span>
       {expanded ? text : text.slice(0, maxLength) + '...'}{' '}
@@ -52,9 +43,6 @@ const TruncatedText: React.FC<{
   );
 };
 
-// --------------------------
-// Tipe data
-// --------------------------
 interface FeedUser {
   ID: number;
   Fullname: string;
@@ -97,11 +85,6 @@ interface CreateFeedFormValues {
   feed: string;
 }
 
-// --------------------------
-// Helper & Utils
-// --------------------------
-
-// Helper untuk mendapatkan inisial nama
 const getInitials = (name: string): string => {
   const words = name.split(' ');
   if (words.length === 1) return words[0].charAt(0).toUpperCase();
@@ -111,7 +94,6 @@ const getInitials = (name: string): string => {
     .join('');
 };
 
-// Fungsi helper untuk merender media (gambar, video, audio, file)
 const renderMedia = (filePath: string): React.ReactNode => {
   const url = `${import.meta.env.VITE_GOLANG_API_BASE_URL}/${filePath}`;
   const extension = filePath.split('.').pop()?.toLowerCase();
@@ -149,7 +131,6 @@ const renderMedia = (filePath: string): React.ReactNode => {
   }
 };
 
-// Komponen Avatar: jika PhotoProfile ada, pakai <img> dalam <div> fixed size
 const renderUserAvatar = (photoUrl?: string, name?: string, size = 40) => {
   if (photoUrl) {
     return (
@@ -165,7 +146,6 @@ const renderUserAvatar = (photoUrl?: string, name?: string, size = 40) => {
       </div>
     );
   }
-  // Kalau tidak ada PhotoProfile, pakai <Avatar> bawaan antd
   return (
     <Avatar shape="circle" size={size}>
       {name ? getInitials(name) : 'U'}
@@ -173,9 +153,6 @@ const renderUserAvatar = (photoUrl?: string, name?: string, size = 40) => {
   );
 };
 
-// --------------------------
-// Komponen Utama Feeds
-// --------------------------
 const Feeds: React.FC = () => {
   const { user } = useAuth();
   const [feeds, setFeeds] = useState<FeedItem[]>([]);
@@ -183,23 +160,16 @@ const Feeds: React.FC = () => {
   const [form] = Form.useForm<CreateFeedFormValues>();
   const [fileList, setFileList] = useState<UploadFile[]>([]);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
-  const [commentValues, setCommentValues] = useState<{ [key: number]: string }>(
-    {}
-  );
+  const [commentValues, setCommentValues] = useState<{ [key: number]: string }>({});
 
-  // State untuk edit feed
   const [editingFeed, setEditingFeed] = useState<FeedItem | null>(null);
-  const [isEditFeedModalVisible, setIsEditFeedModalVisible] =
-    useState<boolean>(false);
+  const [isEditFeedModalVisible, setIsEditFeedModalVisible] = useState<boolean>(false);
 
-  // State untuk edit komentar (mapping: commentID -> new text)
-  const [editingComments, setEditingComments] = useState<{
-    [commentId: number]: string;
-  }>({});
+  const [editingComments, setEditingComments] = useState<{ [commentId: number]: string }>({});
 
-  // --------------------------
-  // Ambil feed dari backend
-  // --------------------------
+  // State untuk melacak apakah seluruh komentar untuk suatu feed sudah ditampilkan
+  const [showAllComments, setShowAllComments] = useState<{ [feedId: number]: boolean }>({});
+
   const fetchFeeds = async (): Promise<void> => {
     try {
       const res = await API.get('/feeds');
@@ -213,9 +183,6 @@ const Feeds: React.FC = () => {
     fetchFeeds();
   }, []);
 
-  // --------------------------
-  // Create Feed
-  // --------------------------
   const handleCreateFeed = async (values: CreateFeedFormValues): Promise<void> => {
     try {
       const formData = new FormData();
@@ -240,9 +207,6 @@ const Feeds: React.FC = () => {
     }
   };
 
-  // --------------------------
-  // Like Feed
-  // --------------------------
   const handleLike = async (feedID: number): Promise<void> => {
     try {
       await API.post(`/feeds/${feedID}/like`);
@@ -254,9 +218,6 @@ const Feeds: React.FC = () => {
     }
   };
 
-  // --------------------------
-  // Upload File
-  // --------------------------
   const handleFileChange = ({ fileList }: { fileList: UploadFile[] }) => {
     setFileList(fileList);
     const urls = fileList
@@ -268,9 +229,6 @@ const Feeds: React.FC = () => {
     setPreviewUrls(urls.filter((url): url is string => !!url));
   };
 
-  // --------------------------
-  // Submit Comment
-  // --------------------------
   const handleSubmitComment = async (feedId: number) => {
     const comment = commentValues[feedId];
     if (!comment || comment.trim() === '') {
@@ -297,9 +255,6 @@ const Feeds: React.FC = () => {
     }
   };
 
-  // --------------------------
-  // Edit & Hapus Feed
-  // --------------------------
   const openEditFeedModal = (feed: FeedItem) => {
     setEditingFeed(feed);
     setIsEditFeedModalVisible(true);
@@ -330,9 +285,6 @@ const Feeds: React.FC = () => {
     }
   };
 
-  // --------------------------
-  // Edit & Hapus Komentar
-  // --------------------------
   const startEditComment = (comment: CommentItem) => {
     setEditingComments((prev) => ({ ...prev, [comment.ID]: comment.Comment }));
   };
@@ -372,7 +324,6 @@ const Feeds: React.FC = () => {
 
   return (
     <div className="container mx-auto">
-      {/* Modal Pembuatan Feed */}
       <Modal
         title="Buat Feed Baru"
         visible={isModalVisible}
@@ -432,7 +383,6 @@ const Feeds: React.FC = () => {
         </Form>
       </Modal>
 
-      {/* Modal Edit Feed */}
       <Modal
         title="Edit Feed"
         visible={isEditFeedModalVisible}
@@ -446,14 +396,11 @@ const Feeds: React.FC = () => {
           rows={4}
           value={editingFeed?.Feed}
           onChange={(e) =>
-            editingFeed &&
-            setEditingFeed({ ...editingFeed, Feed: e.target.value })
+            editingFeed && setEditingFeed({ ...editingFeed, Feed: e.target.value })
           }
           className="break-all"
         />
       </Modal>
-
-      {/* Floating Button untuk membuat feed */}
       {user && (
         <Button
           type="primary"
@@ -464,8 +411,6 @@ const Feeds: React.FC = () => {
           onClick={() => setIsModalVisible(true)}
         />
       )}
-
-      {/* List Feed */}
       <List
         dataSource={feeds}
         renderItem={(item: FeedItem) => {
@@ -480,7 +425,6 @@ const Feeds: React.FC = () => {
           return (
             <List.Item key={item.ID} className="mb-6">
               <div className="bg-white border border-gray-200 rounded-lg shadow-sm w-full md:w-3/4 lg:w-2/3 mx-auto">
-                {/* Header: avatar + nama user */}
                 <div className="flex p-4 justify-between items-start">
                   <div className="flex items-start space-x-3">
                     {renderUserAvatar(item.User?.PhotoProfile, item.User?.Fullname, 40)}
@@ -493,7 +437,6 @@ const Feeds: React.FC = () => {
                       </p>
                     </div>
                   </div>
-                  {/* Tombol edit & hapus feed (hanya pemilik feed) */}
                   {user && item.User?.ID === user.ID && (
                     <div className="flex-shrink-0">
                       <Button type="link" onClick={() => openEditFeedModal(item)}>
@@ -506,7 +449,6 @@ const Feeds: React.FC = () => {
                   )}
                 </div>
 
-                {/* Konten Post (media) */}
                 {filePaths.length > 0 && (
                   <div className="w-full">
                     {filePaths.length === 1 ? (
@@ -521,9 +463,7 @@ const Feeds: React.FC = () => {
                   </div>
                 )}
 
-                {/* Isi feed + aksi */}
                 <div className="p-4">
-                  {/* Gunakan TruncatedText agar isi feed tidak terlalu panjang */}
                   <p className="text-sm mb-2 break-all">
                     <TruncatedText text={item.Feed} maxLength={100} />
                   </p>
@@ -538,7 +478,6 @@ const Feeds: React.FC = () => {
                     </Button>
                   </div>
 
-                  {/* Form Komentar */}
                   {user && (
                     <div className="flex flex-col sm:flex-row gap-2 mt-4">
                       <Input
@@ -558,96 +497,109 @@ const Feeds: React.FC = () => {
                       </Button>
                     </div>
                   )}
-
-                  {/* Daftar Komentar */}
                   {item.Comments && item.Comments.length > 0 && (
                     <div className="mt-4 border-t pt-4">
-                      {item.Comments.map((comment) => {
-                        const commentUser =
-                          comment.User && comment.User.Username.trim() !== ''
-                            ? comment.User
-                            : {
-                                ID: 0,
-                                Username: 'Unknown',
-                                PhotoProfile: '',
-                                Fullname: '',
-                              };
+                      {
+                        // Jika komentar lebih dari 5 dan belum diexpand, hanya tampilkan 5 komentar pertama
+                        (showAllComments[item.ID]
+                          ? item.Comments
+                          : item.Comments.slice(0, 5)
+                        ).map((comment) => {
+                          const commentUser =
+                            comment.User && comment.User.Username.trim() !== ''
+                              ? comment.User
+                              : {
+                                  ID: 0,
+                                  Username: 'Unknown',
+                                  PhotoProfile: '',
+                                  Fullname: '',
+                                };
 
-                        const isEditing = Object.prototype.hasOwnProperty.call(
-                          editingComments,
-                          comment.ID
-                        );
+                          const isEditing = Object.prototype.hasOwnProperty.call(
+                            editingComments,
+                            comment.ID
+                          );
 
-                        return (
-                          <div key={comment.ID} className="mt-2">
-                            {/* Layout avatar komentar + isi komentar */}
-                            <div className="flex items-start space-x-2">
-                              {renderUserAvatar(
-                                commentUser.PhotoProfile,
-                                commentUser.Fullname,
-                                30
-                              )}
-                              <div className="break-all min-w-0 flex-1">
-                                <p className="text-sm font-semibold break-all">
-                                  {commentUser.Fullname || 'Unknown'}{' '}
-                                  <span className="text-xs text-gray-500 ml-2">
-                                    {new Date(comment.CreatedAt).toLocaleString()}
-                                  </span>
-                                </p>
-                                {isEditing ? (
-                                  <div className="!w-full flex items-center gap-2">
-                                    <Input
-                                      value={editingComments[comment.ID]}
-                                      maxLength={1000}
-                                      onChange={(e) =>
-                                        setEditingComments((prev) => ({
-                                          ...prev,
-                                          [comment.ID]: e.target.value,
-                                        }))
-                                      }
-                                      className="break-all"
-                                    />
-                                    <Button onClick={() => handleUpdateComment(comment.ID)}>
-                                      Simpan
-                                    </Button>
-                                    <Button onClick={() => cancelEditComment(comment.ID)} danger>
-                                      Batal
-                                    </Button>
-                                  </div>
-                                ) : (
-                                  // Gunakan TruncatedText di komentar
-                                  <p className="text-sm break-all">
-                                    <TruncatedText
-                                      text={comment.Comment}
-                                      maxLength={100}
-                                    />
-                                  </p>
+                          return (
+                            <div key={comment.ID} className="mt-2">
+                              <div className="flex items-start space-x-2">
+                                {renderUserAvatar(
+                                  commentUser.PhotoProfile,
+                                  commentUser.Fullname,
+                                  30
                                 )}
-                              </div>
-                              {/* Tombol Edit/Hapus Komentar di sebelah kanan */}
-                              {user && commentUser.ID === user.ID && (
-                                <div className="ml-2 flex-shrink-0">
-                                  {!isEditing && (
+                                <div className="break-all min-w-0 flex-1">
+                                  <p className="text-sm font-semibold break-all">
+                                    {commentUser.Fullname || 'Unknown'}{' '}
+                                    <span className="text-xs text-gray-500 ml-2">
+                                      {new Date(comment.CreatedAt).toLocaleString()}
+                                    </span>
+                                  </p>
+                                  {isEditing ? (
+                                    <div className="!w-full flex items-center gap-2">
+                                      <Input
+                                        value={editingComments[comment.ID]}
+                                        maxLength={1000}
+                                        onChange={(e) =>
+                                          setEditingComments((prev) => ({
+                                            ...prev,
+                                            [comment.ID]: e.target.value,
+                                          }))
+                                        }
+                                        className="break-all"
+                                      />
+                                      <Button onClick={() => handleUpdateComment(comment.ID)}>
+                                        Simpan
+                                      </Button>
+                                      <Button onClick={() => cancelEditComment(comment.ID)} danger>
+                                        Batal
+                                      </Button>
+                                    </div>
+                                  ) : (
+                                    <p className="text-sm break-all">
+                                      <TruncatedText
+                                        text={comment.Comment}
+                                        maxLength={100}
+                                      />
+                                    </p>
+                                  )}
+                                </div>
+                                {user && commentUser.ID === user.ID && (
+                                  <div className="ml-2 flex-shrink-0">
+                                    {!isEditing && (
+                                      <Button type="link" onClick={() => startEditComment(comment)}>
+                                        Edit
+                                      </Button>
+                                    )}
                                     <Button
                                       type="link"
-                                      onClick={() => startEditComment(comment)}
+                                      danger
+                                      onClick={() => handleDeleteComment(comment.ID)}
                                     >
-                                      Edit
+                                      Hapus
                                     </Button>
-                                  )}
-                                  <Button
-                                    type="link"
-                                    danger
-                                    onClick={() => handleDeleteComment(comment.ID)}
-                                  >
-                                    Hapus
-                                  </Button>
-                                </div>
-                              )}
+                                  </div>
+                                )}
+                              </div>
                             </div>
+                          );
+                        })
+                      }
+                      {
+                        // Jika jumlah komentar lebih dari 5 dan belum diexpand, tampilkan tombol "Lihat semua komentar"
+                        item.Comments.length > 5 && !showAllComments[item.ID] && (
+                          <div className="mt-2">
+                            <Button
+                              type="link"
+                              onClick={() =>
+                                setShowAllComments((prev) => ({ ...prev, [item.ID]: true }))
+                              }
+                            >
+                              Lihat semua komentar
+                            </Button>
                           </div>
-                        );
-                      })}
+                        )
+                      }
                     </div>
                   )}
                 </div>
