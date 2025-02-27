@@ -1,3 +1,4 @@
+// src/pages/UserDetail.tsx
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Avatar, Button, List, message } from 'antd';
@@ -104,7 +105,10 @@ const UserDetail: React.FC = () => {
   return (
     <div className="max-w-2xl mx-auto p-4">
       <div className="flex items-center space-x-4 mb-6">
-        <Avatar size={80} src={userDetail.PhotoProfile ? `${baseUrl}/${userDetail.PhotoProfile}` : undefined}>
+        <Avatar
+          size={80}
+          src={userDetail.PhotoProfile ? `${baseUrl}/${userDetail.PhotoProfile}` : undefined}
+        >
           {userDetail.Fullname.charAt(0)}
         </Avatar>
         <div>
@@ -129,28 +133,49 @@ const UserDetail: React.FC = () => {
           <List
             dataSource={feeds}
             renderItem={(feed) => (
-              <List.Item key={feed.ID} className="border p-4 rounded mb-2">
-                <p>{feed.Feed}</p>
-                {feed.File && (
-                  <div className="mt-2">
-                    {(() => {
-                      const fileUrl = `${baseUrl}/${feed.File}`;
-                      const ext = feed.File.split('.').pop()?.toLowerCase();
-                      const imageExt = ['jpg', 'jpeg', 'png', 'gif', 'bmp'];
-                      const videoExt = ['mp4', 'mov', 'avi', 'mkv'];
-                      const audioExt = ['mp3', 'wav', 'ogg'];
-                      if (ext && imageExt.includes(ext)) {
-                        return <img src={fileUrl} alt="attachment" style={{ maxWidth: '200px' }} />;
-                      } else if (ext && videoExt.includes(ext)) {
-                        return <video controls src={fileUrl} style={{ maxWidth: '200px' }} />;
-                      } else if (ext && audioExt.includes(ext)) {
-                        return <audio controls src={fileUrl} />;
-                      } else {
-                        return <a href={fileUrl} download className="text-blue-500 underline">Download File</a>;
-                      }
-                    })()}
+              <List.Item key={feed.ID} className="mb-6">
+                <div className="bg-white border border-gray-200 rounded-lg shadow-sm w-full p-4">
+                  <p className="text-sm mb-2">{feed.Feed}</p>
+                  {feed.File && (
+                    <div className="w-full">
+                      {(() => {
+                        const fileUrl = `${baseUrl}/${feed.File}`;
+                        const ext = feed.File.split('.').pop()?.toLowerCase();
+                        const imageExt = ['jpg', 'jpeg', 'png', 'gif', 'bmp'];
+                        const videoExt = ['mp4', 'mov', 'avi', 'mkv'];
+                        const audioExt = ['mp3', 'wav', 'ogg'];
+                        if (ext && imageExt.includes(ext)) {
+                          return (
+                            <img
+                              src={fileUrl}
+                              alt="attachment"
+                              className="object-cover rounded w-full max-h-80"
+                            />
+                          );
+                        } else if (ext && videoExt.includes(ext)) {
+                          return (
+                            <video
+                              controls
+                              src={fileUrl}
+                              className="object-cover rounded w-full max-h-80"
+                            />
+                          );
+                        } else if (ext && audioExt.includes(ext)) {
+                          return <audio controls src={fileUrl} className="w-full" />;
+                        } else {
+                          return (
+                            <a href={fileUrl} download className="text-blue-500 underline">
+                              Download File
+                            </a>
+                          );
+                        }
+                      })()}
+                    </div>
+                  )}
+                  <div className="text-xs text-gray-500 mt-2">
+                    {new Date(feed.CreatedAt).toLocaleString()}
                   </div>
-                )}
+                </div>
               </List.Item>
             )}
           />
