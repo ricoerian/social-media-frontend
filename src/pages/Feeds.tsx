@@ -543,6 +543,7 @@ const Feeds: React.FC = () => {
                     <div className="flex flex-col sm:flex-row gap-2 mt-4">
                       <Input
                         placeholder="Tulis komentar..."
+                        maxLength={1000}
                         value={commentValues[item.ID] || ''}
                         onChange={(e) =>
                           setCommentValues((prev) => ({
@@ -597,6 +598,7 @@ const Feeds: React.FC = () => {
                                   <div className="!w-full flex items-center gap-2">
                                     <Input
                                       value={editingComments[comment.ID]}
+                                      maxLength={1000}
                                       onChange={(e) =>
                                         setEditingComments((prev) => ({
                                           ...prev,
