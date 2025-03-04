@@ -6,7 +6,6 @@ import {
   Select,
   DatePicker,
   Avatar,
-  message,
   Modal,
   Spin,
   Flex,
@@ -14,6 +13,7 @@ import {
 import moment, { Moment } from 'moment';
 import API from '../api';
 import { useAuth } from '../hooks/useAuth';
+import { useToast } from '../components/ToastContext';
 
 interface ProfileFormValues {
   fullname: string;
@@ -36,6 +36,7 @@ const Profile: React.FC = () => {
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState<boolean>(false);
   const [isDeactivateModalOpen, setIsDeactivateModalOpen] = useState<boolean>(false);
   const [preview, setPreview] = useState<string>('');
+  const { showToast } = useToast()
 
   // Base URL dari variabel lingkungan Vite
   const baseUrl = import.meta.env.VITE_GOLANG_API_BASE_URL;
@@ -77,10 +78,10 @@ const Profile: React.FC = () => {
         await API.put('/profile', formData, {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
-        message.success('Foto profil berhasil diperbarui');
+        showToast('Foto profil berhasil diperbarui', 'success');
         fetchProfile();
       } catch (error: unknown) {
-        message.error((error as Error).message || 'Gagal update foto profil');
+        showToast((error as Error).message || 'Gagal update foto profil', 'danger');
       }
       setUploading(false);
     },
@@ -103,10 +104,10 @@ const Profile: React.FC = () => {
       await API.put('/profile', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-      message.success('Profile berhasil diperbarui');
+      showToast('Profile berhasil diperbarui', 'success');
       fetchProfile();
     } catch (error: unknown) {
-      message.error((error as Error).message || 'Gagal update profile');
+      showToast((error as Error).message || 'Gagal update profile', 'danger');
     }
   };
 
@@ -115,12 +116,12 @@ const Profile: React.FC = () => {
       await API.put('/profile/password', values, {
         headers: { 'Content-Type': 'application/json' },
       });
-      message.success('Password berhasil diubah');
+      showToast('Password berhasil diubah', 'success');
       setIsPasswordModalOpen(false);
       passwordForm.resetFields();
     } catch (error: unknown) {
       const err = error as { response?: { data?: { error?: string } } };
-      message.error(err.response?.data?.error || 'Gagal mengubah password');
+      showToast(err.response?.data?.error || 'Gagal mengubah password', 'danger');
     }
   };
 
@@ -128,11 +129,11 @@ const Profile: React.FC = () => {
   const handleDeactivateAccount = async () => {
     try {
       await API.delete('/profile');
-      message.success('Akun berhasil dinonaktifkan');
+      showToast('Akun berhasil dinonaktifkan', 'success');
       // Setelah akun dinonaktifkan, Anda bisa melakukan logout atau redirect ke halaman login.
       // Contoh: window.location.href = '/login';
     } catch (error: unknown) {
-      message.error((error as Error).message || 'Gagal menonaktifkan akun');
+      showToast((error as Error).message || 'Gagal menonaktifkan akun', 'danger');
     }
     setIsDeactivateModalOpen(false);
   };
@@ -182,8 +183,8 @@ const Profile: React.FC = () => {
             </Form.Item>
             <Form.Item label="Jenis Kelamin" name="jenis_kelamin">
               <Select placeholder="Pilih jenis kelamin">
-                <Select.Option value="Man">Man</Select.Option>
-                <Select.Option value="Woman">Woman</Select.Option>
+                <Select.Option value="Male">Male</Select.Option>
+                <Select.Option value="Female">Female</Select.Option>
               </Select>
             </Form.Item>
             <Form.Item label="Tanggal Lahir" name="tanggal_lahir">

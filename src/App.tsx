@@ -8,6 +8,7 @@ import Profile from './pages/Profile';
 import SearchUsers from './pages/SearchUsers';
 import UserDetail from './pages/UserDetail';
 import Layout from './components/Layout';
+import { ToastProvider } from './components/ToastContext';
 
 // Komponen RequireAuth untuk proteksi route
 const RequireAuth: React.FC<{ children: JSX.Element }> = ({ children }) => {
@@ -21,68 +22,70 @@ const RequireAuth: React.FC<{ children: JSX.Element }> = ({ children }) => {
 
 const App: React.FC = () => {
   return (
-    <Router>
-      <Routes>
-        {/* Route Public */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
+    <ToastProvider>
+      <Router>
+        <Routes>
+          {/* Route Public */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
 
-        {/* Protected Routes */}
-        <Route
-          path="/"
-          element={
-            <RequireAuth>
-              <Layout>
-                <Feeds />
-              </Layout>
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/chat"
-          element={
-            <RequireAuth>
-              <Layout>
-                <Chat />
-              </Layout>
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/profile"
-          element={
-            <RequireAuth>
-              <Layout>
-                <Profile />
-              </Layout>
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/search"
-          element={
-            <RequireAuth>
-              <Layout>
-                <SearchUsers />
-              </Layout>
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/user/:id"
-          element={
-            <RequireAuth>
-              <Layout>
-                <UserDetail />
-              </Layout>
-            </RequireAuth>
-          }
-        />
+          {/* Protected Routes */}
+          <Route
+            path="/"
+            element={
+              <RequireAuth>
+                <Layout>
+                  <Feeds />
+                </Layout>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/chat"
+            element={
+              <RequireAuth>
+                <Layout>
+                  <Chat />
+                </Layout>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <RequireAuth>
+                <Layout>
+                  <Profile />
+                </Layout>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/search"
+            element={
+              <RequireAuth>
+                <Layout>
+                  <SearchUsers />
+                </Layout>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/user/:id"
+            element={
+              <RequireAuth>
+                <Layout>
+                  <UserDetail />
+                </Layout>
+              </RequireAuth>
+            }
+          />
 
-        {/* Catch-all Redirect ke Login */}
-        <Route path="*" element={<Navigate to="/login" replace />} />
-      </Routes>
-    </Router>
+          {/* Catch-all Redirect ke Login */}
+          <Route path="*" element={<Navigate to="/login" replace />} />
+        </Routes>
+      </Router>
+    </ToastProvider>
   );
 };
 

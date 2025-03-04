@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { Avatar, Button, List, message, Grid, Carousel, Spin } from 'antd';
+import { Avatar, Button, List, Grid, Carousel, Spin } from 'antd';
 import { CheckCircleTwoTone } from '@ant-design/icons';
 import API from '../api';
+import { useToast } from '../components/ToastContext';
 
 interface IUser {
   ID: number;
@@ -33,6 +34,7 @@ const UserDetail: React.FC = () => {
   const { useBreakpoint } = Grid;
   const screens = useBreakpoint();
   const avatarSize = screens.sm ? 200 : 128;
+  const { showToast } = useToast()
 
   useEffect(() => {
     const fetchUserDetail = async () => {
@@ -81,20 +83,20 @@ const UserDetail: React.FC = () => {
   const handleFollow = async () => {
     try {
       await API.post(`/follow/${userId}`);
-      message.success('Berhasil mengikuti user');
+      showToast('Berhasil mengikuti user', 'success');
       setIsFollowing(true);
     } catch {
-      message.error('Gagal mengikuti user');
+      showToast('Gagal mengikuti user', 'danger');
     }
   };
 
   const handleUnfollow = async () => {
     try {
       await API.delete(`/follow/${userId}`);
-      message.success('Berhasil berhenti mengikuti user');
+      showToast('Berhasil berhenti mengikuti user', 'success');
       setIsFollowing(false);
     } catch {
-      message.error('Gagal berhenti mengikuti user');
+      showToast('Gagal berhenti mengikuti user', 'danger');
     }
   };
 

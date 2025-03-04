@@ -6,7 +6,6 @@ import {
   Input,
   Form,
   Select,
-  message,
   Avatar,
   Grid,
   Flex,
@@ -15,6 +14,7 @@ import { ArrowLeftOutlined } from '@ant-design/icons';
 import API from '../api';
 import { useAuth } from '../hooks/useAuth';
 import axios from 'axios';
+import { useToast } from '../components/ToastContext';
 
 const { useBreakpoint } = Grid;
 
@@ -464,6 +464,7 @@ const Chat: React.FC = () => {
   const [selectedUserIds, setSelectedUserIds] = useState<number[]>([]);
   const [chatroomName, setChatroomName] = useState<string>('');
   const messagesEndRef = useRef<HTMLDivElement>(null!);
+  const { showToast } = useToast()
   const fetchChatrooms = async (): Promise<void> => {
     try {
       const res = await API.get('/chatrooms');
@@ -507,12 +508,12 @@ const Chat: React.FC = () => {
 
   const handleSendMessage = async (): Promise<void> => {
     if (!selectedChatroom) {
-      message.error('Please select a chatroom first.');
+      showToast('Please select a chatroom first.', 'warning');
       return;
     }
     const trimmedMessage = newMessage.trim();
     if (trimmedMessage.length === 0 && !selectedFile) {
-      message.error('Message cannot be empty.');
+      showToast('Message cannot be empty.', 'warning');
       return;
     }
     try {
@@ -529,9 +530,9 @@ const Chat: React.FC = () => {
       setSelectedFile(null);
     } catch (error: unknown) {
       if (axios.isAxiosError(error) && error.response) {
-        message.error(error.response.data?.error || 'Failed to send message');
+        showToast(error.response.data?.error || 'Failed to send message', 'danger');
       } else {
-        message.error('Failed to send message');
+        showToast('Failed to send message', 'danger');
       }
     }
   };
@@ -539,26 +540,26 @@ const Chat: React.FC = () => {
   const handleDeleteMessage = async (messageID: number): Promise<void> => {
     try {
       await API.delete(`/messages/${messageID}`);
-      message.success('Message deleted successfully');
+      showToast('Message deleted successfully', 'success');
       if (selectedChatroom) {
         fetchMessages(selectedChatroom.ID);
       }
     } catch {
-      message.error('Failed to delete message');
+      showToast('Failed to delete message', 'danger');
     }
   };
 
   const handleDeleteChatroom = async (chatroomID: number): Promise<void> => {
     try {
       await API.delete(`/chatrooms/${chatroomID}`);
-      message.success('Chatroom deleted successfully');
+      showToast('Chatroom deleted successfully', 'success');
       if (selectedChatroom && selectedChatroom.ID === chatroomID) {
         setSelectedChatroom(null);
         setMessages([]);
       }
       fetchChatrooms();
     } catch {
-      message.error('Failed to delete chatroom');
+      showToast('Failed to delete chatroom', 'danger');
     }
   };
   useEffect(() => {
@@ -574,7 +575,7 @@ const Chat: React.FC = () => {
 
   const handleCreateChatroom = async (): Promise<void> => {
     if (selectedUserIds.length === 0) {
-      message.error('Please select at least one user for chat.');
+      showToast('Please select at least one user for chat.', 'warning');
       return;
     }
     let finalName = '';
@@ -582,7 +583,7 @@ const Chat: React.FC = () => {
       finalName = chatroomName;
     } else {
       if (chatroomName.trim() === '') {
-        message.error('Please enter a group name for group chat.');
+        showToast('Please enter a group name for group chat.', 'warning');
         return;
       }
       finalName = chatroomName;
@@ -595,16 +596,16 @@ const Chat: React.FC = () => {
         user_ids: selectedUserIds,
       };
       await API.post('/chatrooms', payload);
-      message.success('Chatroom created successfully.');
+      showToast('Chatroom created successfully.', 'success');
       setNewChatModalVisible(false);
       setSelectedUserIds([]);
       setChatroomName('');
       fetchChatrooms();
     } catch (error: unknown) {
       if (axios.isAxiosError(error) && error.response) {
-        message.error(error.response.data?.error || 'Failed to create chatroom');
+        showToast(error.response.data?.error || 'Failed to create chatroom', 'danger');
       } else {
-        message.error('Failed to create chatroom');
+        showToast('Failed to create chatroom', 'danger');
       }
     }
   };

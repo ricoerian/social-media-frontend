@@ -3,7 +3,6 @@ import {
   List,
   Button,
   Modal,
-  message,
   Form,
   Input,
   Upload,
@@ -23,6 +22,7 @@ import {
 } from '@ant-design/icons';
 import API from '../api';
 import { useAuth } from '../hooks/useAuth';
+import { useToast } from '../components/ToastContext';
 
 const TruncatedText: React.FC<{
   text: string;
@@ -165,6 +165,7 @@ const Feeds: React.FC = () => {
   const [editingComment, setEditingComment] = useState<CommentItem | null>(null);
   const [isEditCommentModalVisible, setIsEditCommentModalVisible] = useState<boolean>(false);
   const [showAllComments, setShowAllComments] = useState<{ [feedId: number]: boolean }>({});
+  const { showToast } = useToast()
 
   const fetchFeeds = async (): Promise<void> => {
     try {
@@ -191,7 +192,7 @@ const Feeds: React.FC = () => {
       await API.post('/feeds', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-      message.success('Feed berhasil dibuat');
+      showToast('Feed berhasil dibuat', 'success');
       form.resetFields();
       setFileList([]);
       setPreviewUrls([]);
@@ -199,18 +200,18 @@ const Feeds: React.FC = () => {
       fetchFeeds();
     } catch (error: unknown) {
       const err = error as { response?: { data?: { error?: string } } };
-      message.error(err.response?.data?.error || 'Gagal membuat feed');
+      showToast(err.response?.data?.error || 'Gagal membuat feed', 'danger');
     }
   };
 
   const handleLike = async (feedID: number): Promise<void> => {
     try {
       await API.post(`/feeds/${feedID}/like`);
-      message.success('Feed dilike');
+      showToast('Feed dilike', 'success');
       fetchFeeds();
     } catch (error: unknown) {
       const err = error as { response?: { data?: { error?: string } } };
-      message.error(err.response?.data?.error || 'Gagal meng-like feed');
+      showToast(err.response?.data?.error || 'Gagal meng-like feed', 'danger');
     }
   };
 
@@ -225,7 +226,7 @@ const Feeds: React.FC = () => {
   const handleSubmitComment = async (feedId: number) => {
     const comment = commentValues[feedId];
     if (!comment || comment.trim() === '') {
-      message.error('Komentar tidak boleh kosong');
+      showToast('Komentar tidak boleh kosong', 'warning');
       return;
     }
     try {
@@ -239,12 +240,12 @@ const Feeds: React.FC = () => {
           }
         : null;
       await API.post(`/feeds/${feedId}/comments`, { comment, user: userData });
-      message.success('Komentar berhasil dikirim');
+      showToast('Komentar berhasil dikirim', 'success');
       setCommentValues((prev) => ({ ...prev, [feedId]: '' }));
       fetchFeeds();
     } catch (error: unknown) {
       const err = error as { response?: { data?: { error?: string } } };
-      message.error(err.response?.data?.error || 'Gagal mengirim komentar');
+      showToast(err.response?.data?.error || 'Gagal mengirim komentar', 'danger');
     }
   };
 
@@ -257,24 +258,24 @@ const Feeds: React.FC = () => {
     if (!editingFeed) return;
     try {
       await API.put(`/feeds/${editingFeed.ID}`, { feed: editingFeed.Feed });
-      message.success('Feed berhasil diupdate');
+      showToast('Feed berhasil diupdate', 'success');
       setEditingFeed(null);
       setIsEditFeedModalVisible(false);
       fetchFeeds();
     } catch (error: unknown) {
       const err = error as { response?: { data?: { error?: string } } };
-      message.error(err.response?.data?.error || 'Gagal mengupdate feed');
+      showToast(err.response?.data?.error || 'Gagal mengupdate feed', 'danger');
     }
   };
 
   const handleDeleteFeed = async (feedID: number) => {
     try {
       await API.delete(`/feeds/${feedID}`);
-      message.success('Feed berhasil dihapus');
+      showToast('Feed berhasil dihapus', 'success');
       fetchFeeds();
     } catch (error: unknown) {
       const err = error as { response?: { data?: { error?: string } } };
-      message.error(err.response?.data?.error || 'Gagal menghapus feed');
+      showToast(err.response?.data?.error || 'Gagal menghapus feed', 'danger');
     }
   };
 
@@ -290,30 +291,30 @@ const Feeds: React.FC = () => {
       await API.put(`/comments/${editingComment.ID}`, {
         comment: editingComment.Comment,
       });
-      message.success('Komentar berhasil diupdate');
+      showToast('Komentar berhasil diupdate', 'success');
       setIsEditCommentModalVisible(false);
       setEditingComment(null);
       fetchFeeds();
     } catch (error: unknown) {
       const err = error as { response?: { data?: { error?: string } } };
-      message.error(err.response?.data?.error || 'Gagal mengupdate komentar');
+      showToast(err.response?.data?.error || 'Gagal mengupdate komentar', 'danger');
     }
   };
 
   const handleDeleteComment = async (commentID: number) => {
     try {
       await API.delete(`/comments/${commentID}`);
-      message.success('Komentar berhasil dihapus');
+      showToast('Komentar berhasil dihapus', 'success');
       fetchFeeds();
     } catch (error: unknown) {
       const err = error as { response?: { data?: { error?: string } } };
-      message.error(err.response?.data?.error || 'Gagal menghapus komentar');
+      showToast(err.response?.data?.error || 'Gagal menghapus komentar', 'danger');
     }
   };
 
   const feedMenu = (feed: FeedItem) => (
     <Menu>
-      <Menu.Item className='!bg-blue-500 !text-white' key="edit" onClick={() => openEditFeedModal(feed)}>
+      <Menu.Item className='!bg-blue-500 !text-white !mb-1' key="edit" onClick={() => openEditFeedModal(feed)}>
         Edit
       </Menu.Item>
       <Menu.Item className='!bg-red-500 !text-white' key="delete" onClick={() => handleDeleteFeed(feed.ID)}>
