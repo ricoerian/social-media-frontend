@@ -1,4 +1,4 @@
-name: Deploy to Server
+name: Deploy FeedsApp
 
 on:
   push:
@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout Repository
         uses: actions/checkout@v2
 
       - name: Deploy to Server via SSH
@@ -19,6 +19,11 @@ jobs:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
+          # Jika menggunakan port SSH non-standar, tambahkan: port: ${{ secrets.SERVER_PORT }}
           script: |
-            cd /path/to/your/project
+            cd /path/to/FeedsApp
             git pull origin main
+            # Misal, jika kamu menggunakan pm2 untuk menjalankan FeedsApp:
+            pm2 restart feedsapp
+            # Atau jika FeedsApp dijalankan dengan systemd, kamu bisa melakukan:
+            # sudo systemctl restart feedsapp
